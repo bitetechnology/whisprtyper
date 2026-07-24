@@ -26,7 +26,7 @@
   --shadow-soft: 0 12px 32px rgba(29, 24, 16, 0.1);
   --glass-nav-fill: rgba(246, 243, 237, 0.68);
   --glass-nav-fill-top: rgba(255, 255, 255, 0.78);
-  --glass-nav-solid: #f1eee7;
+  --glass-nav-solid: #f1efea;
   --glass-nav-border: rgba(255, 255, 255, 0.78);
   --glass-nav-edge: rgba(29, 29, 31, 0.1);
   --glass-nav-highlight: rgba(255, 255, 255, 0.88);
@@ -272,7 +272,7 @@ main > .cta-strip { margin-top: clamp(28px, 4vw, 44px); }
   text-decoration: none;
   font-weight: 500;
   font-size: 15px;
-  color: var(--ink-soft);
+  color: var(--ink);
   transition: color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
 }
 .nav-links a:hover {
@@ -1184,7 +1184,10 @@ main > .cta-strip { margin-top: clamp(28px, 4vw, 44px); }
     animation: none;
   }
   .nav-brand,
-  .nav-links a { transition: none; }
+  .nav-links a,
+  .nav-cta { transition: none; }
+  .nav-cta:hover,
+  .nav-cta:active { transform: none; }
 }
 
 /* ---------- Responsive ---------- */
