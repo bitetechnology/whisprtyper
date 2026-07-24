@@ -39,17 +39,21 @@
   if (!demo || !pill || !input || !status) return;
 
   var transcript = input.value;
-  var activeOwner = null;
-  var finalTimer = null;
-  var autoTimers = [];
-  var userInteracted = false;
-  var demoInView = false;
-  var autoScheduled = false;
   var previousValue = input.value;
+  var activeOwner = null;
+  var activationTimer = null;
+  var finalTimer = null;
+  var demoInView = false;
 
-  function clearAutoTimers() {
-    autoTimers.forEach(function (timer) { window.clearTimeout(timer); });
-    autoTimers = [];
+  function clearTimers() {
+    if (activationTimer) {
+      window.clearTimeout(activationTimer);
+      activationTimer = null;
+    }
+    if (finalTimer) {
+      window.clearTimeout(finalTimer);
+      finalTimer = null;
+    }
   }
 
   function setState(state) {
@@ -60,71 +64,81 @@
     } else if (state === "finalizing") {
       pill.setAttribute("aria-label", "Finalizing and inserting the preview transcript");
     } else {
-      pill.setAttribute("aria-label", "Press and hold to preview dictation");
+      pill.setAttribute("aria-label", "Activate or press and hold to preview dictation");
     }
   }
 
   function startPreview(owner) {
-    if (activeOwner) return;
-    if (owner !== "auto") {
-      userInteracted = true;
-      clearAutoTimers();
-    }
-    if (finalTimer) {
-      window.clearTimeout(finalTimer);
-      finalTimer = null;
-    }
+    if (activeOwner) return false;
+    clearTimers();
     activeOwner = owner;
     previousValue = input.value;
     input.value = "";
     setState("recording");
     status.textContent = "Listening… release to finish.";
+    return true;
   }
 
   function completePreview() {
     input.value = transcript;
     setState("idle");
-    status.textContent = "Inserted in the original field. Hold again to replay.";
+    status.textContent = "Inserted in the preview field. Hold or activate again to replay.";
     activeOwner = null;
     finalTimer = null;
   }
 
   function finishPreview(owner) {
     if (!activeOwner || (owner && owner !== activeOwner)) return;
+    if (pill.getAttribute("data-state") === "finalizing") return;
+    if (activationTimer) {
+      window.clearTimeout(activationTimer);
+      activationTimer = null;
+    }
     setState("finalizing");
     status.textContent = "Finalizing and inserting…";
     finalTimer = window.setTimeout(completePreview, 800);
   }
 
-  function cancelPreview() {
+  function cancelPreview(message) {
     if (!activeOwner) return;
-    if (finalTimer) {
-      window.clearTimeout(finalTimer);
-      finalTimer = null;
-    }
+    clearTimers();
     input.value = previousValue;
     setState("idle");
-    status.textContent = "Preview cancelled because Control was used in a shortcut.";
+    status.textContent = message || "Preview cancelled. Nothing was inserted.";
     activeOwner = null;
   }
 
   pill.addEventListener("pointerdown", function (event) {
-    if (event.button !== undefined && event.button !== 0) return;
+    if ((event.button !== undefined && event.button !== 0) || event.isPrimary === false) return;
     event.preventDefault();
+    if (!startPreview("pointer")) return;
     if (pill.setPointerCapture) {
-      try { pill.setPointerCapture(event.pointerId); } catch (_) { /* Older browsers may refuse capture. */ }
+      try { pill.setPointerCapture(event.pointerId); } catch (_) { /* Capture is an enhancement. */ }
     }
-    startPreview("pointer");
   });
+
   pill.addEventListener("pointerup", function (event) {
+    if (activeOwner !== "pointer") return;
     event.preventDefault();
     finishPreview("pointer");
   });
+
   pill.addEventListener("pointercancel", function () {
-    finishPreview("pointer");
+    if (activeOwner === "pointer") cancelPreview();
   });
+
+  /* A synthesized click is how VoiceOver, Switch Control, and similar tools
+     activate a semantic button. Pointer and physical-key paths already own the
+     state when their generated click arrives, so only an idle click starts this
+     short accessible preview cycle. */
   pill.addEventListener("click", function (event) {
     event.preventDefault();
+    if (event.detail > 0 || activeOwner) return;
+    if (startPreview("activation")) {
+      activationTimer = window.setTimeout(function () {
+        finishPreview("activation");
+      }, 900);
+    }
   });
 
   pill.addEventListener("keydown", function (event) {
@@ -133,15 +147,22 @@
       startPreview("button-key");
     }
   });
-  pill.addEventListener("keyup", function (event) {
-    if (event.key === " " || event.key === "Enter") {
-      event.preventDefault();
-      finishPreview("button-key");
-    }
+
+  pill.addEventListener("blur", function () {
+    if (activeOwner === "button-key" || activeOwner === "activation") cancelPreview();
   });
 
   document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && activeOwner) {
+      event.preventDefault();
+      cancelPreview();
+      return;
+    }
     if (activeOwner === "control" && event.key !== "Control") {
+      cancelPreview("Preview cancelled because Control was used in a shortcut.");
+      return;
+    }
+    if (activeOwner === "button-key" && event.key !== " " && event.key !== "Enter") {
       cancelPreview();
       return;
     }
@@ -149,22 +170,35 @@
     if (!demoInView) return;
     startPreview("control");
   });
+
   document.addEventListener("keyup", function (event) {
-    if (event.key === "Control") finishPreview("control");
+    if (event.key === "Control") {
+      finishPreview("control");
+    } else if (event.key === " " || event.key === "Enter") {
+      finishPreview("button-key");
+    }
+  });
+
+  window.addEventListener("blur", function () {
+    if (activeOwner) cancelPreview();
+  });
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden && activeOwner) cancelPreview();
+  });
+
+  window.addEventListener("pagehide", function () {
+    if (activeOwner) cancelPreview();
   });
 
   if ("IntersectionObserver" in window) {
     var demoObserver = new IntersectionObserver(
       function (entries) {
         entries.forEach(function (entry) {
-          demoInView = entry.isIntersecting;
-          if (!entry.isIntersecting || userInteracted || reducedMotion.matches || autoScheduled) return;
-          autoScheduled = true;
-          autoTimers.push(window.setTimeout(function () { startPreview("auto"); }, 550));
-          autoTimers.push(window.setTimeout(function () { finishPreview("auto"); }, 2250));
+          demoInView = entry.isIntersecting && entry.intersectionRatio >= 0.45;
         });
       },
-      { threshold: 0.45 }
+      { threshold: [0, 0.45] }
     );
     demoObserver.observe(demo);
   } else {

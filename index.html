@@ -89,16 +89,16 @@
           </div>
           <textarea class="compose-input" id="demo-input" rows="4" readonly>Just finished the draft. I can send it over after lunch so you have time to read it before the meeting.</textarea>
         </div>
-        <button class="voice-pill" id="demo-pill" type="button" data-state="idle" aria-label="Press and hold to preview dictation" aria-describedby="demo-status">
+        <button class="voice-pill" id="demo-pill" type="button" data-state="idle" aria-label="Activate or press and hold to preview dictation" aria-describedby="demo-status">
           <span class="pill-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
           <svg class="pill-spinner" viewBox="0 0 16 16" aria-hidden="true">
             <circle cx="8" cy="8" r="6.5" pathLength="100"></circle>
           </svg>
         </button>
-        <p class="demo-status" id="demo-status" aria-live="polite">Hold Control or press and hold the pill.</p>
+        <p class="demo-status" id="demo-status" aria-live="polite">Hold Control, press and hold the pill, or activate it once.</p>
       </div>
     </figure>
-    <p class="scene-caption">WhisprTyper finalizes your words, then inserts them into the field that was active when you started.</p>
+    <p class="scene-caption">WhisprTyper finalizes your words, then returns them to the supported editable field that was active when you started. If that field is unavailable, the transcript stays available in memory.</p>
   </section>
 
   <!-- CTA strip -->
@@ -110,8 +110,8 @@
   <!-- Works where you type -->
   <section class="apps" aria-labelledby="apps-title">
     <div class="apps-card">
-      <h2 id="apps-title">Works where you type</h2>
-      <p class="apps-sub">No plugins, no per-app setup. If your cursor blinks in it, WhisprTyper can type in it.</p>
+      <h2 id="apps-title">Works across your Mac</h2>
+      <p class="apps-sub">No plugins or per-app setup. WhisprTyper works with supported editable fields and intentionally refuses secure password fields.</p>
       <ul class="app-strip">
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg>Email</li>
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>Chat &amp; messages</li>
@@ -119,7 +119,7 @@
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9z"/><path d="M13 3v6h6"/></svg>Documents</li>
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 7 4 12l4.5 5M15.5 7 20 12l-4.5 5"/></svg>Code editors</li>
         <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c-5.5 5-5.5 12 0 17 5.5-5 5.5-12 0-17z"/></svg>Browser text boxes</li>
-        <li class="app-any"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M9 4h6M9 20h6"/></svg>Any Mac text field</li>
+        <li class="app-any"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M9 4h6M9 20h6"/></svg>Supported editable fields</li>
       </ul>
     </div>
   </section>
@@ -143,7 +143,7 @@
         <li class="reveal">
           <span class="step-key"><kbd>release</kbd></span>
           <h3>Let go</h3>
-          <p>The finished words are typed into the field that was active when you started speaking.</p>
+          <p>The finished words return to the supported editable field that was active when you started speaking.</p>
         </li>
       </ol>
       <p class="how-footnote">Prefer a different trigger? The global shortcut defaults to <kbd>⌃</kbd><kbd>⌥</kbd><kbd>Space</kbd> and is configurable, with push-to-talk, toggle, and automatic speech trigger modes.</p>
@@ -183,8 +183,8 @@
       </article>
 
       <article class="bento-card bento-white bento-insert reveal">
-        <h3>Words return to the exact field</h3>
-        <p>WhisprTyper captures which text field is active when recording starts and inserts only there, even if you glance at another window while talking.</p>
+        <h3>Words return to the original field</h3>
+        <p>WhisprTyper captures the supported editable field that is active when recording starts and attempts to insert only there. If the field cannot be safely recovered, it keeps the transcript in memory instead.</p>
         <div class="insert-mock" aria-hidden="true">
           <div class="mini-window mini-back"><span class="mini-bar"></span><span class="ghost-line"></span><span class="ghost-line short"></span></div>
           <div class="mini-window mini-front">
@@ -206,7 +206,7 @@
 
       <article class="bento-card bento-paper bento-memory reveal">
         <h3>One transcript, in memory only</h3>
-        <p>Your latest transcript is held in RAM so you can copy or retry it. Nothing is written to disk, and it clears when the app quits.</p>
+        <p>If insertion fails, your latest transcript is held in RAM so you can copy it or retry the original destination. Retry is unavailable after successful insertion; memory clears when the app quits.</p>
         <div class="menu-mock" aria-hidden="true">
           <div class="menu-item menu-item-active">Copy Last Transcript</div>
           <div class="menu-item">Retry Last Insertion</div>
