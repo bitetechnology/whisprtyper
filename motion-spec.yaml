@@ -1,0 +1,21 @@
+version: 1
+id: whisprtyper-navbar-liquid-glass
+mobile:
+  strategy: same-material-two-row
+  maxDpr: 2
+reducedMotion:
+  strategy: static
+reducedTransparency:
+  strategy: opaque-surface
+scenes:
+  - id: persistent-glass
+    range: [0.0, 1.0]
+    copy: Persistent product navigation and download CTA.
+    render:
+      mode: css
+      state: frosted-pill
+    acceptance:
+      - stable geometry at every scroll position
+      - all controls at least 44px high
+      - no horizontal overflow at 390px
+      - solid reduced-transparency and forced-colors fallbacks
