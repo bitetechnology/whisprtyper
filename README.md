@@ -2,11 +2,11 @@
 
 Official marketing, support, and privacy pages for WhisprTyper for macOS, published by BITE TECHNOLOGIES LTD.
 
-- Homepage: https://bitetechnology.github.io/whisprtyper/
-- Support: https://bitetechnology.github.io/whisprtyper/support.html
-- Privacy: https://bitetechnology.github.io/whisprtyper/privacy.html
+- Homepage: https://whispr.bite.technology/
+- Support: https://whispr.bite.technology/support.html
+- Privacy: https://whispr.bite.technology/privacy.html
 
-Static HTML/CSS/vanilla JS — no build step. Preview locally with:
+Static HTML/CSS/vanilla JS — no build step, no external runtime dependencies. Preview locally with:
 
 ```sh
 python3 -m http.server 8000
