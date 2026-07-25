@@ -205,3 +205,174 @@
     demoInView = true;
   }
 })();
+
+/* ---------- Hero word-flow scene ----------
+   Decorative deterministic loop: lower-case spoken fragments travel the
+   incoming curve into the pill, the pill finalizes, and the finished
+   sentence exits along the outgoing curve. Purely visual — it never
+   requests microphone access. The inline --x/--y defaults in the markup
+   are a complete static diagram, so this module only enhances; it runs
+   requestAnimationFrame solely while the stage is on screen, the page is
+   visible, and reduced motion is not requested. */
+(function () {
+  "use strict";
+
+  var stage = document.getElementById("hero-stage");
+  if (!stage) return;
+
+  var pill = stage.querySelector(".hero-pill");
+  var label = stage.querySelector(".hero-stage-label");
+  var out = stage.querySelector(".hero-out");
+  var pathIn = document.getElementById("hero-path-in");
+  var pathOut = document.getElementById("hero-path-out");
+  var words = Array.prototype.slice.call(stage.querySelectorAll(".hero-word"));
+  if (!pill || !label || !out || !pathIn || !pathOut || !words.length) return;
+  if (typeof pathIn.getTotalLength !== "function") return;
+
+  var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  var CYCLE_MS = 8400;
+  /* Contiguous normalized phases; ranges mirror motion-spec.yaml. */
+  var PHASES = [
+    { until: 0.62, pill: "recording", text: "listening" },
+    { until: 0.74, pill: "finalizing", text: "finalizing" },
+    { until: 0.95, pill: "inserted", text: "inserted" },
+    { until: 1.01, pill: "recording", text: "listening" }
+  ];
+  /* Last fragment: 0.03 + 4 * 0.08 + 0.24 = 0.59, inside listening (< 0.62). */
+  var WORD_START = 0.03;
+  var WORD_STAGGER = 0.08;
+  var WORD_TRAVEL = 0.24;
+  var OUT_START = 0.74;
+  var OUT_TRAVEL = 0.16;
+  var OUT_DOCK = 0.68; /* normalized dock point along the outgoing path */
+  var OUT_FADE = 0.95;
+
+  var lenIn = pathIn.getTotalLength();
+  var lenOut = pathOut.getTotalLength();
+
+  function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+  function easeInOut(v) { return v * v * (3 - 2 * v); }
+  function easeOut(v) { return 1 - (1 - v) * (1 - v); }
+
+  function place(element, path, length, u, opacity) {
+    var point = path.getPointAtLength(length * clamp01(u));
+    element.style.setProperty("--x", point.x.toFixed(2));
+    element.style.setProperty("--y", point.y.toFixed(2));
+    element.style.setProperty("--o", opacity.toFixed(3));
+  }
+
+  var staticDefaults = words.concat([out]).map(function (element) {
+    return { element: element, css: element.getAttribute("style") || "" };
+  });
+  var staticLabel = label.textContent;
+
+  var pillState = pill.getAttribute("data-state");
+  function setPill(state) {
+    if (state === pillState) return;
+    pillState = state;
+    pill.setAttribute("data-state", state);
+  }
+
+  var labelText = staticLabel;
+  function setLabel(text) {
+    if (text === labelText) return;
+    labelText = text;
+    label.textContent = text;
+  }
+
+  function render(t) {
+    var phase = PHASES[PHASES.length - 1];
+    for (var i = 0; i < PHASES.length; i++) {
+      if (t < PHASES[i].until) { phase = PHASES[i]; break; }
+    }
+    setPill(phase.pill);
+    setLabel(phase.text);
+
+    words.forEach(function (word, index) {
+      var u = (t - (WORD_START + index * WORD_STAGGER)) / WORD_TRAVEL;
+      if (u <= 0 || u >= 1) {
+        word.style.setProperty("--o", "0");
+        return;
+      }
+      var opacity = Math.min(clamp01(u / 0.14), clamp01((1 - u) / 0.2));
+      place(word, pathIn, lenIn, easeInOut(u), opacity);
+    });
+
+    var e = clamp01((t - OUT_START) / OUT_TRAVEL);
+    var opacity = t < OUT_START ? 0 : clamp01(e / 0.25);
+    if (t >= OUT_FADE) opacity = clamp01((1 - t) / (1 - OUT_FADE));
+    place(out, pathOut, lenOut, OUT_DOCK * easeOut(e), opacity);
+  }
+
+  var rafId = null;
+  var elapsed = 0;
+  var lastTs = null;
+
+  function frame(ts) {
+    if (lastTs !== null) elapsed += Math.min(ts - lastTs, 250);
+    lastTs = ts;
+    render((elapsed % CYCLE_MS) / CYCLE_MS);
+    rafId = window.requestAnimationFrame(frame);
+  }
+
+  function start() {
+    if (rafId !== null) return;
+    stage.classList.add("is-animated");
+    lastTs = null;
+    rafId = window.requestAnimationFrame(frame);
+  }
+
+  function stop() {
+    if (rafId !== null) window.cancelAnimationFrame(rafId);
+    rafId = null;
+    lastTs = null;
+    stage.classList.remove("is-animated");
+  }
+
+  /* Reduced motion: back to the complete static diagram, no loop at all. */
+  function restoreStatic() {
+    stop();
+    elapsed = 0;
+    stage.classList.remove("is-animated");
+    staticDefaults.forEach(function (item) {
+      if (item.css) item.element.setAttribute("style", item.css);
+      else item.element.removeAttribute("style");
+    });
+    setPill("recording");
+    setLabel(staticLabel);
+  }
+
+  var stageInView = false;
+  function sync() {
+    if (reducedMotion.matches) {
+      restoreStatic();
+      return;
+    }
+    if (stageInView && !document.hidden) start();
+    else stop();
+  }
+
+  if ("IntersectionObserver" in window) {
+    var stageObserver = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          stageInView = entry.isIntersecting;
+        });
+        sync();
+      },
+      { threshold: 0.1 }
+    );
+    stageObserver.observe(stage);
+  } else {
+    stageInView = true;
+    sync();
+  }
+
+  document.addEventListener("visibilitychange", sync);
+  if (typeof reducedMotion.addEventListener === "function") {
+    reducedMotion.addEventListener("change", sync);
+  } else if (typeof reducedMotion.addListener === "function") {
+    reducedMotion.addListener(sync);
+  }
+})();

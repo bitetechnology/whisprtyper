@@ -293,19 +293,35 @@ main > .cta-strip { margin-top: clamp(28px, 4vw, 44px); }
   padding-top: clamp(40px, 6vw, 72px);
 }
 
+/* Near-full-viewport hero on desktop; min-height only, so short
+   viewports and zoomed text stay content-height safe. */
+@media (min-width: 761px) and (min-height: 560px) {
+  .hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 132px);
+    min-height: calc(100svh - 132px);
+    padding-top: clamp(24px, 4vh, 56px);
+    padding-bottom: 12px;
+  }
+  .hero > * { width: 100%; }
+}
+
 .hero-title {
-  font-size: clamp(42px, 7.4vw, 78px);
+  font-size: clamp(44px, 8.2vw, 94px);
   font-weight: 700;
-  letter-spacing: -0.028em;
-  line-height: 1.02;
+  letter-spacing: -0.03em;
+  line-height: 1.01;
   margin-bottom: 18px;
 }
 
 .hero-sub {
-  font-size: clamp(18px, 2.2vw, 21px);
+  font-size: clamp(18px, 2.3vw, 22px);
   color: var(--ink-soft);
-  max-width: 620px;
-  margin: 0 auto 6px;
+  max-width: 660px;
+  margin: 0 auto 8px;
   text-wrap: pretty;
 }
 
@@ -321,6 +337,152 @@ main > .cta-strip { margin-top: clamp(28px, 4vw, 44px); }
   font-size: 14px;
   color: var(--ink-faint);
   margin: 0;
+}
+
+/* ---------- Hero word-flow stage ----------
+   Spoken lower-case fragments travel a curved incoming path into a strong
+   dark glass pill; the finalized sentence exits along a mirrored outgoing
+   path. Positions are viewBox percentages (0–100) written to --x/--y; the
+   inline defaults in index.html form a complete static diagram, so the
+   scene reads fully without JavaScript or with reduced motion. */
+
+.hero-flow {
+  margin: clamp(30px, 5vh, 54px) 0 0;
+  width: 100%;
+}
+
+.hero-stage {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: clamp(280px, 36vh, 400px);
+  border-radius: var(--radius-lg);
+  background: radial-gradient(62% 58% at 50% 52%, rgba(111, 99, 224, 0.09), transparent 72%);
+}
+
+.stage-curves {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.stage-curves path {
+  fill: none;
+  stroke: rgba(29, 29, 31, 0.26);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 0.001 2.4;
+  vector-effect: non-scaling-stroke;
+}
+
+.hero-word {
+  position: absolute;
+  left: calc(var(--x) * 1%);
+  top: calc(var(--y) * 1%);
+  transform: translate(-50%, -50%);
+  opacity: var(--o, 1);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.hero-out {
+  position: absolute;
+  z-index: 1;
+  left: calc(var(--x) * 1%);
+  top: calc(var(--y) * 1%);
+  transform: translate(-55%, -50%);
+  opacity: var(--o, 1);
+  width: min(420px, 46%);
+  background: linear-gradient(to bottom, #333336, #1a1a1c);
+  color: var(--ivory);
+  border-radius: 18px;
+  padding: 10px 18px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.45;
+  text-wrap: pretty;
+  box-shadow: 0 14px 34px rgba(29, 24, 16, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+/* Strong dark glass over the stage; the faint dotted paths blur beneath it. */
+.voice-pill.hero-pill {
+  --s: 1.35;
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 52%;
+  transform: translate(-50%, -50%);
+  margin-top: 0;
+  cursor: default;
+  touch-action: auto;
+  background: linear-gradient(to bottom, rgba(46, 44, 40, 0.9), rgba(22, 21, 19, 0.94));
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  backdrop-filter: blur(14px) saturate(1.3);
+  box-shadow: 0 20px 44px rgba(29, 24, 16, 0.35), 0 2px 8px rgba(29, 24, 16, 0.18);
+}
+.hero-pill .pill-spinner {
+  width: calc(16px * var(--s));
+  height: calc(16px * var(--s));
+}
+/* Static waveform unless the JS loop is actually running. */
+.voice-pill.hero-pill[data-state="recording"] .pill-wave i { animation: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .hero-stage.is-animated .hero-pill[data-state="recording"] .pill-wave i {
+    animation: pill-bar 1.35s ease-in-out infinite alternate;
+  }
+}
+
+.pill-check {
+  display: none;
+  width: calc(17px * var(--s, 1));
+  height: calc(17px * var(--s, 1));
+}
+.pill-check path {
+  fill: none;
+  stroke: var(--ivory);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.voice-pill[data-state="inserted"] .pill-wave { display: none; }
+.voice-pill[data-state="inserted"] .pill-check { display: block; }
+
+.hero-stage-label {
+  position: absolute;
+  left: 50%;
+  top: 80%;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.voice-pill.hero-pill[data-state="inserted"] ~ .hero-stage-label { opacity: 0; }
+
+.hero-stage-tag {
+  position: absolute;
+  bottom: 7%;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.hero-tag-in { left: 2.5%; }
+.hero-tag-out { right: 2.5%; }
+
+.hero-stage-caption {
+  max-width: 640px;
+  margin: 14px auto 0;
+  font-size: 14.5px;
+  color: var(--ink-soft);
+  text-wrap: pretty;
 }
 
 /* ---------- Product scene ---------- */
@@ -515,6 +677,9 @@ main > .cta-strip { margin-top: clamp(28px, 4vw, 44px); }
 .voice-pill[data-state="finalizing"] .pill-wave { display: none; }
 .voice-pill[data-state="finalizing"] .pill-spinner { display: block; }
 
+/* The hero spinner only animates while the JS loop is actually running; the
+   interactive #product demo spinner keeps spinning under finalizing on its own. */
+.voice-pill.hero-pill[data-state="finalizing"] .pill-spinner { animation: none; }
 @media (prefers-reduced-motion: no-preference) {
   .voice-pill[data-state="recording"] .pill-wave i { animation: pill-bar 1.35s ease-in-out infinite alternate; }
   .voice-pill[data-state="recording"] .pill-wave i:nth-child(1)  { animation-delay: -0.15s; animation-duration: 1.2s; }
@@ -527,7 +692,8 @@ main > .cta-strip { margin-top: clamp(28px, 4vw, 44px); }
   .voice-pill[data-state="recording"] .pill-wave i:nth-child(8)  { animation-delay: -0.78s; }
   .voice-pill[data-state="recording"] .pill-wave i:nth-child(9)  { animation-delay: -0.55s; animation-duration: 1.3s; }
   .voice-pill[data-state="recording"] .pill-wave i:nth-child(10) { animation-delay: -0.08s; }
-  .voice-pill[data-state="finalizing"] .pill-spinner { animation: pill-spin 0.8s linear infinite; }
+  .hero-stage.is-animated .voice-pill.hero-pill[data-state="finalizing"] .pill-spinner { animation: pill-spin 0.8s linear infinite; }
+  .voice-pill:not(.hero-pill)[data-state="finalizing"] .pill-spinner { animation: pill-spin 0.8s linear infinite; }
 }
 @keyframes pill-bar {
   from { transform: scaleY(1); }
@@ -1231,6 +1397,21 @@ main > .cta-strip { margin-top: clamp(28px, 4vw, 44px); }
   .how-steps { grid-template-columns: 1fr; }
   .channel-grid { grid-template-columns: 1fr; }
   .cta-strip { justify-content: center; text-align: center; }
+
+  /* Simplified hero stage: taller curves, fewer fragments, smaller pill,
+     ribbon pulled left so it stays inside the clipped stage. */
+  .hero-stage { height: clamp(280px, 82vw, 340px); }
+  .hero-word { font-size: 12.5px; }
+  .hero-word[data-i="0"],
+  .hero-word[data-i="2"] { display: none; }
+  .voice-pill.hero-pill { --s: 1.05; }
+  .hero-out {
+    width: min(190px, 52%);
+    transform: translate(-60%, -18%);
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+  .hero-stage-label { display: none; }
 }
 
 @media (max-width: 620px) {
@@ -1252,6 +1433,11 @@ main > .cta-strip { margin-top: clamp(28px, 4vw, 44px); }
     box-shadow: 0 10px 28px rgba(40, 32, 20, 0.12), inset 0 0 0 1px rgba(29, 29, 31, 0.08);
   }
   .nav::before { opacity: 0.28; }
+  .hero-pill {
+    background: #1f1e1b;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 
 @media (forced-colors: active) {
@@ -1271,6 +1457,27 @@ main > .cta-strip { margin-top: clamp(28px, 4vw, 44px); }
     background: Highlight;
     box-shadow: none;
   }
+  .hero-stage { background: none; }
+  .stage-curves path { stroke: CanvasText; }
+  .hero-word,
+  .hero-stage-label,
+  .hero-stage-tag { color: CanvasText; }
+  .hero-out {
+    background: Canvas;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+    box-shadow: none;
+  }
+  .hero-pill {
+    background: Canvas;
+    border: 1px solid CanvasText;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+  .hero-pill .pill-wave i { background: CanvasText; }
+  .hero-pill .pill-spinner circle,
+  .hero-pill .pill-check path { stroke: CanvasText; }
 }
 
 @media print {

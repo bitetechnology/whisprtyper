@@ -19,3 +19,70 @@ scenes:
       - all controls at least 44px high
       - no horizontal overflow at 390px
       - solid reduced-transparency and forced-colors fallbacks
+sequences:
+  - id: hero-word-flow
+    timeline: time-loop
+    durationMs: 8400
+    render:
+      mode: html-svg-js
+      paths: inline-svg-cubic-bezier-normalized-viewbox
+      positioning: raf-samples-getPointAtLength-into-css-custom-properties
+      materials: css-only
+    states:
+      - name: listening
+        range: [0.0, 0.62]
+        pill: recording
+        copy: lower-case spoken fragments travel the incoming curve into the pill
+      - name: finalizing
+        range: [0.62, 0.74]
+        pill: finalizing
+        copy: pill swaps waveform for spinner; nothing new enters
+      - name: inserted
+        range: [0.74, 0.95]
+        pill: inserted
+        copy: finalized punctuated sentence exits the outgoing curve and docks
+      - name: reset
+        range: [0.95, 1.0]
+        pill: recording
+        copy: sentence fades out; loop restarts seamlessly
+    mobile:
+      strategy: same-stage-simplified
+      details: taller relative curves, two fragments hidden, 1.05x pill, compact ribbon lowered behind the pill inside the clipped stage, redundant dynamic status label hidden
+    reducedMotion:
+      strategy: static-complete-diagram
+      state: fragments on curve, static waveform pill, docked finalized sentence; no loop runs
+    noJs:
+      strategy: identical static diagram served in markup; nothing hidden until scripts run
+    scheduling:
+      - raf only while stage intersects viewport
+      - raf cancelled when document hidden
+      - runtime reduced-motion change tears down to static diagram
+    acceptance:
+      - incoming fragments read exactly "just finished / the draft / i can send / it over / after lunch"
+      - outgoing sentence reads exactly "Just finished the draft. I can send it over after lunch."
+      - pill states are limited to recording, finalizing, inserted
+      - the page never requests microphone access
+      - stage visuals are aria-hidden and non-interactive; relationship also stated in visible text
+      - no horizontal page overflow at 390px; stage clips internally
+      - no rewriting, grammar, summarization, cloud-AI, or live-dictation implication
+  - id: supporting-decorative-motion
+    note: >
+      Honest inventory. The site has more than the navbar and hero loop. These
+      lighter decorative motions exist and respect prefers-reduced-motion:
+    items:
+      - id: scroll-reveal
+        trigger: section enters viewport (IntersectionObserver)
+        render: css keyframe reveal-in on non-hero content
+        note: content is never hidden; reduced-motion shows it static
+      - id: how-step-waveform
+        location: ".step-key-wave beside the Hold. Talk. Let go. step"
+        render: css keyframe pill-bar loop
+        note: decorative; implies no transcription
+      - id: demo-caret
+        location: "#product demo inserted state"
+        render: css keyframe caret-blink
+        note: shows during the user-triggered interactive preview only
+      - id: interactive-demo-spinner
+        location: "#product demo finalizing state"
+        render: css keyframe pill-spin independent of hero is-animated
+        note: deliberate user-triggered preview, not ambient background motion
