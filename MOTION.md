@@ -13,22 +13,22 @@
 The site's motion is coordinated and intentional. Beyond the hero loop, three lighter decorative motions exist and are called out here for honesty:
 
 1. **Persistent glass navbar** — a stable floating Liquid Glass capsule while the page moves beneath it. Only direct hover, focus, and press interactions change control surfaces; scrolling triggers no choreography.
-2. **Hero word-flow** — an atmospheric, looped explanation of the product: lower-case spoken fragments ("just finished / the draft / i can send / it over / after lunch") drift along a curved incoming path into a strong dark glass pill; the pill listens (waveform), finalizes (spinner), and confirms insertion (check) while the finished punctuated sentence — "Just finished the draft. I can send it over after lunch." — exits along a mirrored outgoing path and docks. It illustrates transcription finalization and insertion only; no rewriting, grammar correction, summarization, or cloud AI is implied, and the page never requests microphone access. The interactive `#product` demo below the hero remains the page's only product *interaction*.
+2. **Hero word-flow** — an atmospheric, looped explanation of the product: lower-case spoken fragments ("just finished / the draft / i can send / it over / after lunch") spiral inward along a logarithmic curve into a strong dark glass pill; the pill listens (waveform), finalizes (spinner), and confirms insertion (check) while the finished punctuated sentence — "Just finished the draft. I can send it over after lunch." — docks to the right of the pill. It illustrates transcription finalization and insertion only; no rewriting, grammar correction, summarization, or cloud AI is implied, and the page never requests microphone access. The interactive `#product` demo below the hero remains the page's only product *interaction*.
 3. **Supporting decorative motion (truthful inventory, not "nothing else"):** section scroll-reveal (`reveal-in`) on non-hero content; a small animated waveform beside the "Hold. Talk. Let go." step in *How it works* (`.step-key-wave`); and a blinking text caret shown during the `#product` demo's inserted state. All three respect `prefers-reduced-motion: reduce`. None imply transcription, rewriting, or microphone use.
 
-## Hero timeline (normalized over one 8.4s loop)
+## Hero timeline (normalized over one 9.0s loop)
 
 | Range | State | Pill | What moves | Acceptance criterion |
 |---:|---|---|---|---|
-| 0.00–0.62 | `listening` | waveform | staggered fragments travel the incoming curve, fading out at the pill | fragments stay lower-case and unpunctuated |
+| 0.00–0.62 | `listening` | waveform | staggered fragments spiral inward along the logarithmic curve, fading out at the pill | fragments stay lower-case and unpunctuated |
 | 0.62–0.74 | `finalizing` | spinner | nothing new enters | no fragment crosses the pill during finalizing |
-| 0.74–0.95 | `inserted` | check | finalized sentence emerges and docks on the outgoing curve | sentence is the punctuated version of the fragments |
+| 0.74–0.95 | `inserted` | check | finalized sentence fades in docked to the right of the pill | sentence is the punctuated version of the fragments |
 | 0.95–1.00 | `reset` | waveform | sentence fades; loop restarts | loop is seamless and deterministic |
 
 ## Render decision
 
 - **CSS** renders all materials (pill glass, ribbon, chips) and the pill waveform/spinner keyframes.
-- **Inline SVG** draws the two faint dotted cubic-Bézier guide paths in a normalized 0–100 viewBox (`preserveAspectRatio="none"` + non-scaling stroke, so the curves stretch with the stage) and supplies `getPointAtLength` sampling.
+- **Inline SVG** draws a single faint dotted logarithmic-spiral guide path in a normalized 0–100 viewBox (`preserveAspectRatio="none"` + non-scaling stroke, so the curve stretches with the stage) and supplies `getPointAtLength` sampling for the inward word travel.
 - **JS** (`script.js`, own module) runs one deterministic `requestAnimationFrame` loop that maps normalized time to path positions via CSS custom properties (`--x`/`--y`/`--o`) and switches the pill `data-state`.
 - No canvas, WebGL, Rive, video, frame sequences, external libraries, or generated media.
 

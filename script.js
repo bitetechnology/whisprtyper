@@ -207,9 +207,9 @@
 })();
 
 /* ---------- Hero word-flow scene ----------
-   Decorative deterministic loop: lower-case spoken fragments travel the
-   incoming curve into the pill, the pill finalizes, and the finished
-   sentence exits along the outgoing curve. Purely visual — it never
+   Decorative deterministic loop: lower-case spoken fragments spiral inward
+   along a logarithmic curve into the pill, the pill finalizes, and the finished
+   sentence docks to the right of the pill. Purely visual — it never
    requests microphone access. The inline --x/--y defaults in the markup
    are a complete static diagram, so this module only enhances; it runs
    requestAnimationFrame solely while the stage is on screen, the page is
@@ -223,15 +223,14 @@
   var pill = stage.querySelector(".hero-pill");
   var label = stage.querySelector(".hero-stage-label");
   var out = stage.querySelector(".hero-out");
-  var pathIn = document.getElementById("hero-path-in");
-  var pathOut = document.getElementById("hero-path-out");
+  var pathIn = document.getElementById("hero-path");
   var words = Array.prototype.slice.call(stage.querySelectorAll(".hero-word"));
-  if (!pill || !label || !out || !pathIn || !pathOut || !words.length) return;
+  if (!pill || !label || !out || !pathIn || !words.length) return;
   if (typeof pathIn.getTotalLength !== "function") return;
 
   var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-  var CYCLE_MS = 8400;
+  var CYCLE_MS = 9000;
   /* Contiguous normalized phases; ranges mirror motion-spec.yaml. */
   var PHASES = [
     { until: 0.62, pill: "recording", text: "listening" },
@@ -239,17 +238,16 @@
     { until: 0.95, pill: "inserted", text: "inserted" },
     { until: 1.01, pill: "recording", text: "listening" }
   ];
-  /* Last fragment: 0.03 + 4 * 0.08 + 0.24 = 0.59, inside listening (< 0.62). */
+  /* Last fragment: 0.03 + 4 * 0.08 + 0.30 = 0.65, inside listening (< 0.62)? 0.65 > 0.62,
+     so the final fragment lands in finalizing — keep WORD_STAGGER modest. */
   var WORD_START = 0.03;
-  var WORD_STAGGER = 0.08;
-  var WORD_TRAVEL = 0.24;
+  var WORD_STAGGER = 0.07;
+  var WORD_TRAVEL = 0.30;
   var OUT_START = 0.74;
   var OUT_TRAVEL = 0.16;
-  var OUT_DOCK = 0.68; /* normalized dock point along the outgoing path */
   var OUT_FADE = 0.95;
 
   var lenIn = pathIn.getTotalLength();
-  var lenOut = pathOut.getTotalLength();
 
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
   function easeInOut(v) { return v * v * (3 - 2 * v); }
@@ -296,13 +294,15 @@
         return;
       }
       var opacity = Math.min(clamp01(u / 0.14), clamp01((1 - u) / 0.2));
+      /* Spiral is drawn outer->inner; u:0->1 walks the fragment inward to the pill. */
       place(word, pathIn, lenIn, easeInOut(u), opacity);
     });
 
     var e = clamp01((t - OUT_START) / OUT_TRAVEL);
     var opacity = t < OUT_START ? 0 : clamp01(e / 0.25);
     if (t >= OUT_FADE) opacity = clamp01((1 - t) / (1 - OUT_FADE));
-    place(out, pathOut, lenOut, OUT_DOCK * easeOut(e), opacity);
+    /* Finalized sentence docks to the right of the pill (static --x:82;--y:52). */
+    out.style.setProperty("--o", opacity.toFixed(3));
   }
 
   var rafId = null;

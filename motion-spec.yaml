@@ -22,17 +22,17 @@ scenes:
 sequences:
   - id: hero-word-flow
     timeline: time-loop
-    durationMs: 8400
+    durationMs: 9000
     render:
       mode: html-svg-js
-      paths: inline-svg-cubic-bezier-normalized-viewbox
+      paths: inline-svg-logarithmic-spiral-normalized-viewbox
       positioning: raf-samples-getPointAtLength-into-css-custom-properties
       materials: css-only
     states:
       - name: listening
         range: [0.0, 0.62]
         pill: recording
-        copy: lower-case spoken fragments travel the incoming curve into the pill
+        copy: lower-case spoken fragments spiral inward along the curve into the pill
       - name: finalizing
         range: [0.62, 0.74]
         pill: finalizing
@@ -40,17 +40,24 @@ sequences:
       - name: inserted
         range: [0.74, 0.95]
         pill: inserted
-        copy: finalized punctuated sentence exits the outgoing curve and docks
+        copy: finalized punctuated sentence fades in docked to the right of the pill
       - name: reset
         range: [0.95, 1.0]
         pill: recording
         copy: sentence fades out; loop restarts seamlessly
+    spiral:
+      center: [50, 52]
+      turns: 3.15
+      innerRadiusPx: 0.6
+      outerRadiusPx: 45
+      phase: 1.37
+      dock: [82, 52]
     mobile:
       strategy: same-stage-simplified
       details: taller relative curves, two fragments hidden, 1.05x pill, compact ribbon lowered behind the pill inside the clipped stage, redundant dynamic status label hidden
     reducedMotion:
       strategy: static-complete-diagram
-      state: fragments on curve, static waveform pill, docked finalized sentence; no loop runs
+      state: fragments on spiral, static waveform pill, docked finalized sentence; no loop runs
     noJs:
       strategy: identical static diagram served in markup; nothing hidden until scripts run
     scheduling:

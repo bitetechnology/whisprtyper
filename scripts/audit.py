@@ -71,8 +71,9 @@ check(
 
 # --- Hero word-flow scene -------------------------------------------------
 check("hero stage exists", 'id="hero-stage"' in index and 'aria-hidden="true"' in index)
-check("hero incoming path exists", 'id="hero-path-in"' in index)
-check("hero outgoing path exists", 'id="hero-path-out"' in index)
+check("hero spiral path exists", 'id="hero-path"' in index)
+check("hero pills uses single spiral path (no legacy in/out paths)",
+      'id="hero-path-in"' not in index and 'id="hero-path-out"' not in index)
 check("hero pill exists with default recording state",
       re.search(r'class="voice-pill hero-pill" data-state="recording"', index) is not None)
 for fragment in ["just finished", "the draft", "i can send", "it over", "after lunch"]:
