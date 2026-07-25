@@ -20,44 +20,47 @@ scenes:
       - no horizontal overflow at 390px
       - solid reduced-transparency and forced-colors fallbacks
 sequences:
-  - id: hero-word-flow
+  - id: hero-wave-type
     timeline: time-loop
     durationMs: 9000
     render:
       mode: html-svg-js
-      paths: inline-svg-logarithmic-spiral-normalized-viewbox
+      paths: inline-svg-2d-wave-normalized-viewbox
       positioning: raf-samples-getPointAtLength-into-css-custom-properties
       materials: css-only
+      typeface: editorial-serif
     states:
       - name: listening
-        range: [0.0, 0.62]
+        range: [0.0, 0.74]
         pill: recording
-        copy: lower-case spoken fragments spiral inward along the curve into the pill
+        copy: editorial sentence types out letter by letter along the 2D wave into the pill
       - name: finalizing
-        range: [0.62, 0.74]
+        range: [0.74, 0.84]
         pill: finalizing
-        copy: pill swaps waveform for spinner; nothing new enters
+        copy: pill swaps waveform for spinner; in-wave letters fade as docked sentence takes over
       - name: inserted
-        range: [0.74, 0.95]
+        range: [0.84, 0.96]
         pill: inserted
-        copy: finalized punctuated sentence fades in docked to the right of the pill
+        copy: finalized punctuated sentence sits docked to the right of the pill
       - name: reset
-        range: [0.95, 1.0]
+        range: [0.96, 1.0]
         pill: recording
         copy: sentence fades out; loop restarts seamlessly
-    spiral:
+    wave:
+      viewBox: [0, 0, 100, 100]
+      start: [6, 74]
+      end: [74, 52]
+      humps: 2
+      amplitudeDecay: 1.45
+      amplitudePx: 22
       center: [50, 52]
-      turns: 3.15
-      innerRadiusPx: 0.6
-      outerRadiusPx: 45
-      phase: 1.37
       dock: [82, 52]
     mobile:
       strategy: same-stage-simplified
-      details: taller relative curves, two fragments hidden, 1.05x pill, compact ribbon lowered behind the pill inside the clipped stage, redundant dynamic status label hidden
+      details: taller relative curves, two letters hidden (data-i 0/2), 1.05x pill, compact ribbon lowered behind the pill inside the clipped stage, redundant dynamic status label hidden
     reducedMotion:
       strategy: static-complete-diagram
-      state: fragments on spiral, static waveform pill, docked finalized sentence; no loop runs
+      state: full editorial sentence laid along the wave, static waveform pill, docked finalized sentence; no loop runs
     noJs:
       strategy: identical static diagram served in markup; nothing hidden until scripts run
     scheduling:

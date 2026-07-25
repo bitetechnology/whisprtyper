@@ -76,13 +76,13 @@ check("hero pills uses single spiral path (no legacy in/out paths)",
       'id="hero-path-in"' not in index and 'id="hero-path-out"' not in index)
 check("hero pill exists with default recording state",
       re.search(r'class="voice-pill hero-pill" data-state="recording"', index) is not None)
-for fragment in ["just finished", "the draft", "i can send", "it over", "after lunch"]:
-    check(f'fragment "{fragment}" present', f">{fragment}</span>" in index)
+check("hero letters present (typewriter model)", index.count('class="hero-letter"') >= 50)
+check("hero letter J present", 'data-i="0"' in index and ">J</span>" in index)
 check(
     "finalized sentence exact",
     "Just finished the draft. I can send it over after lunch.</span>" in index,
 )
-check("hero figcaption explains the flow in text", 'class="hero-stage-caption"' in index)
+check("hero flow explained in text", 'class="scene-caption"' in index and "finalizes" in index)
 check("hero stage styles exist", ".hero-stage" in styles and ".hero-out" in styles)
 check("hero module exists in script.js", 'getElementById("hero-stage")' in script)
 
@@ -101,7 +101,7 @@ check(
 )
 check(
     "hero fragment/tag/label/caption use AA token --ink-soft",
-    ".hero-word {\n  position: absolute;" in styles
+    ".hero-letter {\n  position: absolute;" in styles
     and "color: var(--ink-soft);" in styles
     and ".hero-stage-caption {" in styles,
 )
