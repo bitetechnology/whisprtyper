@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://whisprtyper.vercel.app/</loc>
+    <loc>https://whispr.bite.technology/</loc>
   </url>
   <url>
-    <loc>https://whisprtyper.vercel.app/support.html</loc>
+    <loc>https://whispr.bite.technology/support.html</loc>
   </url>
   <url>
-    <loc>https://whisprtyper.vercel.app/privacy.html</loc>
+    <loc>https://whispr.bite.technology/privacy.html</loc>
+  </url>
+  <url>
+    <loc>https://whispr.bite.technology/demo.html</loc>
   </url>
 </urlset>

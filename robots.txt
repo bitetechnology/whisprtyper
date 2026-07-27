@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://whisprtyper.vercel.app/sitemap.xml
+Sitemap: https://whispr.bite.technology/sitemap.xml
