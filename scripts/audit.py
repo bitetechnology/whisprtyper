@@ -310,9 +310,11 @@ check("user pause freezes RAF transports without restoring their static start st
       and script.count('if (document.body.classList.contains("motion-paused"))') >= 3
       and script.count('stop();\n      return;') >= 3)
 
-check("speed section keeps the requested 30/70 contract without a product benchmark claim",
+check("speed section uses the requested qualified 5x illustrative claim, not a product benchmark",
       'id="speed"' in index
-      and "From typing pace to speaking pace." in index
+      and "Speak up to 5x faster than you type." in index
+      and ("4" + "x faster") not in index.lower()
+      and ("4" + "× faster") not in index.lower()
       and "not measured WhisprTyper throughput" in index
       and '<span class="wpm-num">45</span>' in index
       and '<span class="wpm-num">220</span>' in index
