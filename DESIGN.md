@@ -95,7 +95,7 @@ components:
 ## Evidence, comparison, and sharing
 
 - The pine proof card uses only workplaces explicitly supplied by the product owner: NVIDIA, Google, Apple, and Notion. The moving logo row must say it represents individual professionals and must explicitly state that the companies do not endorse or partner with WhisprTyper.
-- The 45/220 WPM card remains an illustrative human-input comparison, not measured WhisprTyper throughput. A shared SVG word path crosses both cards; words move at the slower keyboard rate on the 45 WPM side and accelerate after entering the 220 WPM side. Reduced motion shows the complete path as a static relationship.
+- The speed section leads with the qualified heading **“Speak up to 5x faster than you type.”** The adjacent 45/220 WPM card remains an illustrative human-input comparison, not measured WhisprTyper throughput. A shared SVG word path crosses both cards; words move at the slower keyboard rate on the 45 WPM side and accelerate after entering the 220 WPM side. Reduced motion shows the complete path as a static relationship.
 - The native menu-bar mock uses the same compact nine-bar waveform mark as the hero pill.
 - Canonical, Open Graph, Twitter, and JSON-LD URLs use `https://whispr.bite.technology/`. Link previews use a dedicated inspected 1200×630 image, not the square app icon, and Twitter uses `summary_large_image`.
 
