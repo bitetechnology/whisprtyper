@@ -14,7 +14,7 @@ This is not a before/after card transition. Input and output are two color treat
 
 ## Composition
 
-- One responsive SVG path starts off-left, forms a shallow valley through the measured pill center, and ends off-right.
+- One responsive SVG path begins with a shallow non-self-intersecting hook, runs full-bleed from off-left, forms a calm valley through the measured pill center, and ends off-right.
 - Two complete identical transcript copies, separated by one measured pitch, create a seamless loop.
 - Each copy is rendered twice with the exact same numeric `startOffset`:
   - input layer: muted gray, clipped left of the pill;
@@ -28,7 +28,7 @@ This is not a before/after card transition. Input and output are two color treat
 ## Transport
 
 - Speed: `78 CSS px/s`.
-- Pitch: rendered sentence advance plus `2.4em` separator.
+- Pitch: full intrinsic sentence advance measured by an unpathed off-canvas SVG text probe, plus `2.4em` separator. Do not derive pitch from a live `textPath`: WebKit reports only its visible portion and causes repeated-copy overlap.
 - Every input/output pair receives the same offset each frame.
 - All sentence layers stay at opacity `1`; there is no per-word or per-letter reveal.
 - Copy wrapping is modulo two pitches and swaps identical content invisibly.
@@ -50,10 +50,25 @@ This is not a before/after card transition. Input and output are two color treat
 
 ## Scheduling
 
-- `requestAnimationFrame` runs only when the stage intersects the viewport, the document is visible, and reduced motion is not requested.
+- `requestAnimationFrame` runs only when the stage intersects the viewport, the document is visible, reduced motion is not requested, and the user has not paused automatic motion.
+- The persistent pause/resume control stops the hero, app train, company logo marquee, and WPM conveyor together.
 - `ResizeObserver` refreshes geometry.
 - Frame deltas are capped at `250ms` after suspension.
 - No microphone, audio context, speech-recognition API, canvas, WebGL, or external motion library is used.
+
+## Hero speaking avatar
+
+- One original inline SVG editorial bust faces right immediately above the hero pill.
+- Only the mouth cavity, tongue, and lower lip animate. No head bob, blinking, arm movement, or full-body motion is permitted.
+- The speaking loop uses short irregular mouth openings over `1.7s`; the silhouette and thick outline remain stable.
+- User pause freezes the current mouth frame. Reduced motion and print show the mouth closed.
+- The SVG is decorative (`aria-hidden="true"`) because the adjacent hero title and control already communicate the feature.
+
+## WPM shared-path comparison
+
+- One SVG path spans the complete 30/70 keyboard/voice grid and curves gently near the card seam.
+- Individual word particles travel on that one path. They use a slow local velocity in the 45 WPM region and smoothly accelerate after entering the 220 WPM region; this cannot be represented by a single global `textPath startOffset` speed.
+- The animation runs only while intersecting, visible, motion-allowed, and not user-paused. Reduced motion and no-JS preserve a complete static path with representative words.
 
 ## Fallbacks
 

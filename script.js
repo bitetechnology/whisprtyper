@@ -3,6 +3,18 @@
 (function () {
   "use strict";
 
+  var motionToggle = document.getElementById("motion-toggle");
+  if (motionToggle) {
+    motionToggle.addEventListener("click", function () {
+      var paused = document.body.classList.toggle("motion-paused");
+      motionToggle.setAttribute("aria-pressed", paused ? "true" : "false");
+      motionToggle.setAttribute("title", paused ? "Resume animations" : "Pause animations");
+      var glyph = motionToggle.querySelector(".motion-toggle-glyph");
+      if (glyph) glyph.textContent = paused ? "▶" : "❚❚";
+      window.dispatchEvent(new Event("whisprmotionchange"));
+    });
+  }
+
   var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   /* ---------- Decorative scroll reveal ---------- */
@@ -232,11 +244,20 @@
   var inputPaths = inputCopies.map(function (copy) { return copy.querySelector("textPath"); });
   var outputPaths = outputCopies.map(function (copy) { return copy.querySelector("textPath"); });
   var bars = Array.prototype.slice.call(pill ? pill.querySelectorAll(".pill-wave i") : []);
+  var measureProbe = null;
 
   if (!svg || !pill || !path || !ribbon || !clipInRect || !clipOutRect) return;
   if (inputCopies.length !== 2 || outputCopies.length !== 2 || bars.length === 0) return;
   if (inputPaths.concat(outputPaths).some(function (node) { return !node; })) return;
   if (typeof path.getTotalLength !== "function") return;
+
+  measureProbe = document.createElementNS("http://www.w3.org/2000/svg", "text");
+  measureProbe.setAttribute("class", "hero-sentence-copy hero-measure-probe");
+  measureProbe.setAttribute("x", "-10000");
+  measureProbe.setAttribute("y", "0");
+  measureProbe.setAttribute("aria-hidden", "true");
+  measureProbe.textContent = inputCopies[0].textContent;
+  svg.appendChild(measureProbe);
 
   var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   var TRANSPORT_SPEED = 78; /* CSS px (SVG user units) per second */
@@ -258,18 +279,22 @@
   }
 
   function measureConveyor() {
+    /* WebKit reports only the currently visible portion for text attached to a
+       path, which makes the repeated-copy pitch too short and causes overlap.
+       Measure the same styled sentence off-path so every browser returns its
+       full intrinsic advance. */
     var advance = 0;
-    if (typeof inputCopies[0].getComputedTextLength === "function") {
-      advance = inputCopies[0].getComputedTextLength();
+    if (typeof measureProbe.getComputedTextLength === "function") {
+      advance = measureProbe.getComputedTextLength();
     }
-    if (!(advance > 0)) advance = inputCopies[0].textContent.length * copyFontSize() * 0.5;
+    if (!(advance > 0)) advance = measureProbe.textContent.length * copyFontSize() * 0.5;
     sentenceAdvance = advance;
     pitch = sentenceAdvance + copyFontSize() * GAP_EM;
   }
 
-  /* A shallow two-cubic valley matches the reference: muted words descend
-     toward the pill, then the same path climbs away under the black ribbon.
-     Horizontal tangents at the center keep type calm as it crosses the pill. */
+  /* Full-bleed, non-self-intersecting hook into a shallow valley. The entry
+     curl borrows the reference's energy without ever crossing itself, so
+     repeated text remains readable on every viewport. */
   function buildFlowPath(width, height, centerX, centerY) {
     var compact = width < 560;
     var overshoot = Math.max(compact ? 26 : 64, width * 0.075);
@@ -279,13 +304,23 @@
     var endY = Math.max(22, centerY - outputRise);
     var startX = -overshoot;
     var endX = width + overshoot;
-    var leftC1 = width * (compact ? 0.08 : 0.1);
-    var leftC2 = centerX * (compact ? 0.68 : 0.62);
+    var hookTopX = width * (compact ? 0.1 : 0.085);
+    var hookEndX = width * (compact ? 0.24 : 0.2);
+    var hookLift = Math.min(height * (compact ? 0.075 : 0.13), compact ? 18 : 48);
+    var hookTopY = Math.max(compact ? 18 : 22, startY - hookLift);
+    var hookSettleY = startY + hookLift * 0.58;
+    var leftC2 = centerX * (compact ? 0.7 : 0.64);
     var rightC1 = centerX + (width - centerX) * (compact ? 0.32 : 0.38);
     var rightC2 = width * (compact ? 0.92 : 0.88);
 
     return "M " + startX.toFixed(2) + " " + startY.toFixed(2)
-      + " C " + leftC1.toFixed(2) + " " + startY.toFixed(2)
+      + " C " + (width * 0.015).toFixed(2) + " " + startY.toFixed(2)
+      + " " + (hookTopX * 0.55).toFixed(2) + " " + hookTopY.toFixed(2)
+      + " " + hookTopX.toFixed(2) + " " + hookTopY.toFixed(2)
+      + " C " + (hookTopX + (hookEndX - hookTopX) * 0.45).toFixed(2) + " " + hookTopY.toFixed(2)
+      + " " + (hookEndX - (hookEndX - hookTopX) * 0.22).toFixed(2) + " " + hookSettleY.toFixed(2)
+      + " " + hookEndX.toFixed(2) + " " + hookSettleY.toFixed(2)
+      + " C " + (hookEndX + width * 0.08).toFixed(2) + " " + hookSettleY.toFixed(2)
       + " " + leftC2.toFixed(2) + " " + centerY.toFixed(2)
       + " " + centerX.toFixed(2) + " " + centerY.toFixed(2)
       + " C " + rightC1.toFixed(2) + " " + centerY.toFixed(2)
@@ -397,7 +432,7 @@
   }
 
   function sync() {
-    if (reducedMotion.matches) {
+    if (reducedMotion.matches || document.body.classList.contains("motion-paused")) {
       restoreStatic();
       return;
     }
@@ -431,6 +466,7 @@
   }
 
   document.addEventListener("visibilitychange", sync);
+  window.addEventListener("whisprmotionchange", sync);
   if (typeof reducedMotion.addEventListener === "function") {
     reducedMotion.addEventListener("change", sync);
   } else if (typeof reducedMotion.addListener === "function") {
@@ -527,7 +563,7 @@
   }
 
   function sync() {
-    if (reducedMotion.matches) {
+    if (reducedMotion.matches || document.body.classList.contains("motion-paused")) {
       restoreStatic();
       return;
     }
@@ -562,6 +598,7 @@
   }
 
   document.addEventListener("visibilitychange", sync);
+  window.addEventListener("whisprmotionchange", sync);
   if (typeof reducedMotion.addEventListener === "function") {
     reducedMotion.addEventListener("change", sync);
   } else if (typeof reducedMotion.addListener === "function") {
@@ -569,12 +606,250 @@
   }
 })();
 
+/* ---------- 45 → 220 WPM shared-path conveyor ---------- */
+(function () {
+  "use strict";
+
+  var grid = document.getElementById("speed-flow");
+  if (!grid) return;
+
+  var stage = grid.querySelector(".speed-flow-stage");
+  var svg = grid.querySelector(".speed-flow-svg");
+  var path = document.getElementById("speed-flow-path");
+  var voiceClip = document.getElementById("speed-flow-voice-clip-rect");
+  var keyboardCard = grid.querySelector(".speed-card-keys");
+  var voiceCard = grid.querySelector(".speed-card-voice");
+  var words = Array.prototype.slice.call(grid.querySelectorAll("[data-flow-word]"));
+  if (!stage || !svg || !path || !voiceClip || !keyboardCard || !voiceCard || words.length === 0) return;
+  if (typeof path.getTotalLength !== "function") return;
+
+  var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var KEYBOARD_SPEED = 28;
+  var VOICE_SPEED = 108;
+  var rafId = null;
+  var lastTs = null;
+  var cycleTime = 0;
+  var inView = false;
+  var resizeRaf = null;
+  var pathLength = 1;
+  var totalTravelTime = 1;
+  var distanceTable = [];
+  var timeTable = [];
+  var voiceBounds = { x: 0, y: 0, width: 0, height: 0 };
+  var speedRampStart = 0.3;
+  var speedRampEnd = 0.42;
+
+  function smoothstep(edge0, edge1, value) {
+    var x = Math.max(0, Math.min(1, (value - edge0) / (edge1 - edge0)));
+    return x * x * (3 - 2 * x);
+  }
+
+  function velocityAtProgress(progress) {
+    return KEYBOARD_SPEED + (VOICE_SPEED - KEYBOARD_SPEED) * smoothstep(speedRampStart, speedRampEnd, progress);
+  }
+
+  function updateSpeedRamp() {
+    var samples = 360;
+    var voiceEntry = null;
+    for (var i = 0; i <= samples; i++) {
+      var progress = i / samples;
+      if (isInVoice(path.getPointAtLength(pathLength * progress))) {
+        voiceEntry = progress;
+        break;
+      }
+    }
+    speedRampStart = voiceEntry === null ? 0.3 : Math.min(0.98, voiceEntry);
+    speedRampEnd = Math.min(1, speedRampStart + 0.12);
+  }
+
+  function buildSpeedPath(width, height, compact, keyBounds, voice) {
+    if (compact) {
+      var keyY = Math.max(64, keyBounds.y + keyBounds.height - 48);
+      var voiceY = Math.max(keyY + 80, voice.y + voice.height - 48);
+      return "M -28 " + keyY.toFixed(2)
+        + " C " + (width * 0.34).toFixed(2) + " " + keyY.toFixed(2)
+        + " " + (width * 0.76).toFixed(2) + " " + (keyY - 5).toFixed(2)
+        + " " + (width - 12).toFixed(2) + " " + (keyY - 2).toFixed(2)
+        + " C " + (width - 4).toFixed(2) + " " + (keyY + 54).toFixed(2)
+        + " " + (width - 4).toFixed(2) + " " + (voiceY - 54).toFixed(2)
+        + " " + (width - 12).toFixed(2) + " " + voiceY.toFixed(2)
+        + " C " + (width * 0.72).toFixed(2) + " " + voiceY.toFixed(2)
+        + " " + (width * 0.34).toFixed(2) + " " + (voiceY - 8).toFixed(2)
+        + " -28 " + (voiceY - 4).toFixed(2);
+    }
+
+    var baseY = Math.max(80, height - Math.min(66, height * 0.17));
+    var seamX = voice.x;
+    return "M -40 " + baseY.toFixed(2)
+      + " C " + (seamX * 0.34).toFixed(2) + " " + baseY.toFixed(2)
+      + " " + (seamX * 0.72).toFixed(2) + " " + (baseY - 10).toFixed(2)
+      + " " + (seamX + 8).toFixed(2) + " " + (baseY - 6).toFixed(2)
+      + " C " + (seamX + (width - seamX) * 0.28).toFixed(2) + " " + (baseY + 10).toFixed(2)
+      + " " + (width * 0.78).toFixed(2) + " " + (baseY - 30).toFixed(2)
+      + " " + (width + 40).toFixed(2) + " " + (baseY - 24).toFixed(2);
+  }
+
+  function rebuildTimingTable() {
+    pathLength = Math.max(1, path.getTotalLength());
+    updateSpeedRamp();
+    distanceTable = [0];
+    timeTable = [0];
+    var samples = 360;
+    var elapsed = 0;
+    for (var i = 1; i <= samples; i++) {
+      var distance = pathLength * i / samples;
+      var previous = pathLength * (i - 1) / samples;
+      var midpoint = (distance + previous) * 0.5 / pathLength;
+      elapsed += (distance - previous) / velocityAtProgress(midpoint);
+      distanceTable.push(distance);
+      timeTable.push(elapsed);
+    }
+    totalTravelTime = Math.max(0.001, elapsed);
+    cycleTime %= totalTravelTime;
+  }
+
+  function distanceAtTime(time) {
+    var target = ((time % totalTravelTime) + totalTravelTime) % totalTravelTime;
+    var low = 0;
+    var high = timeTable.length - 1;
+    while (low + 1 < high) {
+      var mid = (low + high) >> 1;
+      if (timeTable[mid] <= target) low = mid;
+      else high = mid;
+    }
+    var span = timeTable[high] - timeTable[low] || 1;
+    var ratio = (target - timeTable[low]) / span;
+    return distanceTable[low] + (distanceTable[high] - distanceTable[low]) * ratio;
+  }
+
+  function isInVoice(point) {
+    return point.x >= voiceBounds.x && point.x <= voiceBounds.x + voiceBounds.width
+      && point.y >= voiceBounds.y && point.y <= voiceBounds.y + voiceBounds.height;
+  }
+
+  function render() {
+    if (distanceTable.length < 2 || timeTable.length < 2) return;
+    words.forEach(function (word) {
+      var phase = parseFloat(word.getAttribute("data-phase")) || 0;
+      var distance = distanceAtTime(cycleTime + phase * totalTravelTime);
+      var point = path.getPointAtLength(distance);
+      var tangentStart = point;
+      var tangentEnd = path.getPointAtLength(Math.min(pathLength, distance + 1.5));
+      if (distance >= pathLength - 1.5) {
+        tangentStart = path.getPointAtLength(Math.max(0, distance - 1.5));
+        tangentEnd = point;
+      }
+      var angle = Math.atan2(tangentEnd.y - tangentStart.y, tangentEnd.x - tangentStart.x) * 180 / Math.PI;
+      if (angle > 90) angle -= 180;
+      if (angle < -90) angle += 180;
+      word.setAttribute("transform", "translate(" + point.x.toFixed(2) + " " + point.y.toFixed(2) + ") rotate(" + angle.toFixed(2) + ")");
+      word.classList.toggle("speed-flow-word-voice", isInVoice(point));
+    });
+  }
+
+  function rebuildGeometry() {
+    var stageRect = stage.getBoundingClientRect();
+    var keyRect = keyboardCard.getBoundingClientRect();
+    var voiceRect = voiceCard.getBoundingClientRect();
+    if (!stageRect.width || !stageRect.height) return;
+
+    var keyBounds = {
+      x: keyRect.left - stageRect.left,
+      y: keyRect.top - stageRect.top,
+      width: keyRect.width,
+      height: keyRect.height
+    };
+    voiceBounds = {
+      x: voiceRect.left - stageRect.left,
+      y: voiceRect.top - stageRect.top,
+      width: voiceRect.width,
+      height: voiceRect.height
+    };
+    var compact = voiceBounds.y >= keyBounds.y + keyBounds.height - 1;
+    svg.setAttribute("viewBox", "0 0 " + stageRect.width.toFixed(2) + " " + stageRect.height.toFixed(2));
+    path.setAttribute("d", buildSpeedPath(stageRect.width, stageRect.height, compact, keyBounds, voiceBounds));
+    voiceClip.setAttribute("x", voiceBounds.x.toFixed(2));
+    voiceClip.setAttribute("y", voiceBounds.y.toFixed(2));
+    voiceClip.setAttribute("width", voiceBounds.width.toFixed(2));
+    voiceClip.setAttribute("height", voiceBounds.height.toFixed(2));
+    rebuildTimingTable();
+    render();
+  }
+
+  function stop() {
+    if (rafId !== null) cancelAnimationFrame(rafId);
+    rafId = null;
+    lastTs = null;
+  }
+
+  function frame(timestamp) {
+    if (lastTs === null) lastTs = timestamp;
+    var delta = Math.min(250, Math.max(0, timestamp - lastTs));
+    lastTs = timestamp;
+    cycleTime = (cycleTime + delta / 1000) % totalTravelTime;
+    render();
+    rafId = requestAnimationFrame(frame);
+  }
+
+  function start() {
+    if (rafId !== null) return;
+    lastTs = null;
+    rafId = requestAnimationFrame(frame);
+  }
+
+  function restoreStatic() {
+    stop();
+    cycleTime = 0;
+    rebuildGeometry();
+  }
+
+  function sync() {
+    if (reducedMotion.matches || document.body.classList.contains("motion-paused")) {
+      restoreStatic();
+      return;
+    }
+    if (inView && !document.hidden) start();
+    else stop();
+  }
+
+  function queueRebuild() {
+    if (resizeRaf !== null) cancelAnimationFrame(resizeRaf);
+    resizeRaf = requestAnimationFrame(function () {
+      resizeRaf = null;
+      rebuildGeometry();
+    });
+  }
+
+  rebuildGeometry();
+
+  if ("IntersectionObserver" in window) {
+    var observer = new IntersectionObserver(function (entries) {
+      inView = entries.some(function (entry) { return entry.isIntersecting; });
+      sync();
+    }, { threshold: 0.05 });
+    observer.observe(grid);
+  } else {
+    inView = true;
+  }
+
+  if ("ResizeObserver" in window) {
+    var resizeObserver = new ResizeObserver(queueRebuild);
+    resizeObserver.observe(grid);
+  } else {
+    window.addEventListener("resize", queueRebuild, { passive: true });
+  }
+
+  document.addEventListener("visibilitychange", sync);
+  window.addEventListener("whisprmotionchange", sync);
+  if (typeof reducedMotion.addEventListener === "function") reducedMotion.addEventListener("change", sync);
+  else if (typeof reducedMotion.addListener === "function") reducedMotion.addListener(sync);
+  sync();
+})();
+
 /* ---------- Marquee visibility control ----------
-   The role marquee and the speed-card ribbon are CSS transports that are
-   paused by default. JS marks each [data-marquee] as running only while it
-   intersects the viewport, the document is visible, and reduced motion is
-   off. Without JS the class never appears and the static wrapped layout
-   from the stylesheet stands. */
+   The app and company marquees are CSS transports paused by default. JS
+   marks each [data-marquee] as running only while it is visible, the tab is
+   active, reduced motion is not requested, and the user has not paused it. */
 (function () {
   "use strict";
 
@@ -586,7 +861,8 @@
 
   function apply() {
     marquees.forEach(function (element, index) {
-      var run = visible[index] && !document.hidden && !reducedMotion.matches;
+      var run = visible[index] && !document.hidden && !reducedMotion.matches
+        && !document.body.classList.contains("motion-paused");
       element.classList.toggle("is-running", run);
     });
   }
@@ -606,6 +882,7 @@
   }
 
   document.addEventListener("visibilitychange", apply);
+  window.addEventListener("whisprmotionchange", apply);
   if (typeof reducedMotion.addEventListener === "function") {
     reducedMotion.addEventListener("change", apply);
   } else if (typeof reducedMotion.addListener === "function") {

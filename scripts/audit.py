@@ -19,7 +19,7 @@ DOWNLOAD_URL = (
     "https://github.com/bitetechnology/whisprtyper/releases/download/"
     "v1.0.0/WhisprTyper-1.0.zip"
 )
-ORIGIN = "https://whisprtyper.vercel.app"
+ORIGIN = "https://whispr.bite.technology"
 
 failures = []
 
@@ -40,25 +40,29 @@ page_text = {
 }
 
 # --- Download links and Apple icon controls -------------------------------
-href_count = index.count(f'href="{DOWNLOAD_URL}"')
-check("six exact download hrefs in index.html", href_count == 6, f"found {href_count}")
+expected_release_links = {"index.html": 6, "demo.html": 3, "privacy.html": 0, "support.html": 0}
 for page, text in page_text.items():
     download_anchors = re.findall(
         rf'<a\b[^>]*href="{re.escape(DOWNLOAD_URL)}"[^>]*>(.*?)</a>', text, re.S
     )
-    check(
-        f"every release link in {page} has an Apple icon",
-        all('class="apple-mark"' in body and 'href="#apple-mark-def"' in body
-            for body in download_anchors),
-        f"checked {len(download_anchors)} link(s)",
-    )
+    check(f"expected release-link count in {page}",
+          len(download_anchors) == expected_release_links[page],
+          f"found {len(download_anchors)}")
+    if download_anchors:
+        check(
+            f"every release link in {page} has an Apple icon",
+            all('class="apple-mark"' in body and 'href="#apple-mark-def"' in body
+                for body in download_anchors),
+            f"checked {len(download_anchors)} link(s)",
+        )
     anchor_bodies = re.findall(r'<a\b[^>]*>(.*?)</a>', text, re.S)
     labeled_controls = [body for body in anchor_bodies if "Download for Mac" in body]
-    check(
-        f"every Download for Mac control in {page} has an Apple icon",
-        all('class="apple-mark"' in body for body in labeled_controls),
-        f"checked {len(labeled_controls)} control(s)",
-    )
+    if labeled_controls:
+        check(
+            f"every Download for Mac control in {page} has an Apple icon",
+            all('class="apple-mark"' in body for body in labeled_controls),
+            f"checked {len(labeled_controls)} control(s)",
+        )
 
 jsonld_match = re.search(
     r'<script type="application/ld\+json">\s*(\{.*?\})\s*</script>', index, re.S
@@ -124,6 +128,26 @@ check("black output ribbon reuses the shared path",
       'class="hero-ribbon" href="#hero-path"' in index)
 check("hero pill exists with waveform state",
       re.search(r'class="voice-pill hero-pill" data-state="recording"', index) is not None)
+avatar_match = re.search(r'<div class="hero-avatar" aria-hidden="true">(.*?)</div>', hero_section, re.S)
+avatar_markup = avatar_match.group(1) if avatar_match else ""
+check("hero has one original inline-SVG right-facing editorial upper-body avatar",
+      hero_section.count('class="hero-avatar"') == 1
+      and "<svg" in avatar_markup
+      and 'class="hero-avatar-head hero-avatar-ink"' in avatar_markup
+      and 'class="hero-avatar-torso hero-avatar-ink"' in avatar_markup
+      and "<img" not in avatar_markup)
+check("only the avatar mouth components are animated",
+      'class="hero-avatar-mouth-open"' in avatar_markup
+      and 'class="hero-avatar-lower-lip"' in avatar_markup
+      and "@keyframes hero-avatar-mouth-open" in styles
+      and "@keyframes hero-avatar-lower-lip" in styles
+      and ".hero-avatar-head { animation" not in styles
+      and ".hero-avatar-torso { animation" not in styles)
+check("avatar speaking loop respects user pause and reduced motion",
+      ".motion-paused .hero-avatar-mouth-open" in styles
+      and "animation-play-state: paused !important;" in styles
+      and "@media (prefers-reduced-motion: reduce)" in styles
+      and ".hero-avatar-mouth-open { transform: scaleY(0.08); }" in styles)
 TRANSCRIPT = (
     "I think the new timeline should be ready by Friday, although it might "
     "slip a little, so can you check in with the team and see if the notes "
@@ -160,6 +184,10 @@ check("hero stage/ribbon styles exist", ".hero-stage" in styles and ".hero-ribbo
 check("hero module exists in script.js", 'getElementById("hero-stage")' in script)
 
 hero_script = script.split("/* ---------- Hero continuous through-pill sentence ribbon ----------", 1)[-1]
+check("hero pitch uses an unpathed intrinsic SVG measurement probe",
+      'class", "hero-sentence-copy hero-measure-probe"' in hero_script
+      and "measureProbe.getComputedTextLength()" in hero_script
+      and "inputCopies[0].getComputedTextLength()" not in hero_script)
 check("hero waveform CSS keyframes are disabled",
       '.voice-pill.hero-pill[data-state="recording"] .pill-wave i { animation: none; }' in styles)
 check("interactive demo spinner remains independent",
@@ -200,13 +228,21 @@ check("pill bars and pulse share the text transport clock",
       and "bars[i].style.transform" in script
       and 'pill.style.setProperty("--hero-pulse"' in script
       and "renderWave(transportPx)" in script)
-check("JS rebuilds responsive valley, clips, and ribbon in CSS pixels",
+check("JS rebuilds responsive full-bleed hook, valley, clips, and ribbon in CSS pixels",
       "buildFlowPath" in script
+      and "hookTopX" in script
+      and "hookEndX" in script
       and 'setAttribute("viewBox"' in script
       and "clipInRect.setAttribute" in script
       and "clipOutRect.setAttribute" in script
       and 'ribbon.setAttribute("stroke-width"' in script
       and "ResizeObserver" in script)
+check("hero motion stage breaks out to full viewport width without a card edge",
+      ".hero .hero-flow {" in styles
+      and "width: auto;" in styles
+      and "margin-inline: calc(50% - 50vw);" in styles
+      and ".hero-stage" in styles
+      and "border-radius: 0;" in styles)
 check("hero has no phase machine, checkmark, or static output reveal",
       all(token not in hero_script for token in ["var PHASES", "function setOutReveal", "setPill(", "out.style.clipPath"]))
 legacy_tokens = ["hero-letter", "hero-word", "wordStarts", 'data-i="']
@@ -241,29 +277,52 @@ check("app train has deterministic visibility-aware motion",
       and "restoreStatic" in script
       and "reducedMotion.matches" in script)
 check("app compatibility copy is Mac-truthful",
-      "Works in every app you already use." in index
+      "Use your voice across familiar Mac apps." in index
       and "supported text field" in index
       and "Secure password fields" in index)
 
-ROLES = [
-    "FOUNDERS", "DESIGNERS", "ENGINEERS", "OPERATORS", "RESEARCHERS",
-    "CREATORS", "WRITERS", "CONSULTANTS",
-]
-check("professional marquee uses role labels instead of fake customer logos",
-      "For people who write all day." in index
-      and all(role in index for role in ROLES)
-      and not re.search(r"trusted by|used by (people|professionals) at", index, re.I))
-check("role and speed marquees are visibility and reduced-motion controlled",
+COMPANIES = ["nvidia", "google", "apple", "notion"]
+company_section_match = re.search(r'<section class="bleed company-proof".*?</section>', index, re.S)
+company_section = company_section_match.group(0) if company_section_match else ""
+check("company proof uses only the four product-owner-confirmed workplaces",
+      "Used by people who write all day." in company_section
+      and "Individual professionals at NVIDIA, Google, Apple, and Notion use WhisprTyper." in company_section
+      and all(company_section.count(f'src="assets/app-icons/{company}.svg"') == 2 for company in COMPANIES)
+      and all((ROOT / "assets" / "app-icons" / f"{company}.svg").stat().st_size > 200
+              for company in COMPANIES))
+check("company proof explicitly avoids partnership or endorsement",
+      "Company names identify where individual users work. No partnership or endorsement is implied." in index)
+check("company marquee and WPM conveyor are visibility, preference, and user-pause controlled",
       "[data-marquee]" in script
-      and ".roles-marquee.is-running" in styles
-      and ".speed-ribbon.is-running" in styles)
+      and ".company-marquee.is-running" in styles
+      and 'getElementById("speed-flow")' in script
+      and 'window.addEventListener("whisprmotionchange", sync)' in script
+      and "motion-paused" in script
+      and 'id="motion-toggle"' in index
+      and 'motionToggle.setAttribute("aria-label"' not in script)
 
-check("speed section keeps the requested 30/70 contract",
+check("speed section keeps the requested 30/70 contract without a product benchmark claim",
       'id="speed"' in index
-      and "Speak up to 4× faster." in index
+      and "From typing pace to speaking pace." in index
+      and "not measured WhisprTyper throughput" in index
       and '<span class="wpm-num">45</span>' in index
       and '<span class="wpm-num">220</span>' in index
       and "grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);" in styles)
+check("speed comparison uses one responsive variable-velocity SVG word path",
+      'id="speed-flow"' in index
+      and 'id="speed-flow-path"' in index
+      and index.count("data-flow-word") == 6
+      and "var KEYBOARD_SPEED = 28;" in script
+      and "var VOICE_SPEED = 108;" in script
+      and "smoothstep(speedRampStart, speedRampEnd, progress)" in script
+      and "updateSpeedRamp" in script
+      and "Math.min(0.98, voiceEntry)" in script
+      and "distanceTable.length < 2" in script
+      and "voiceBounds.y >= keyBounds.y + keyBounds.height - 1" in script
+      and "getPointAtLength" in script
+      and "ResizeObserver" in script
+      and ".speed-ribbon" not in styles
+      and 'class="speed-ribbon"' not in index)
 check("speed section has demo and Apple-icon download actions",
       '<a class="button button-ghost" href="demo.html">Try the demo</a>' in index
       and re.search(r'class="speed-actions".*?class="apple-mark"', index, re.S) is not None)
@@ -273,6 +332,10 @@ check("workflow statement and four factual feature stories exist",
           "Privacy first", "Local by default", "Instant where you type",
           "Native and out of the way",
       ]))
+menubar_markup = re.search(r'<span class="menubar-wave">(.*?)</span>', index, re.S)
+check("native menu-bar mock uses the approved nine-bar waveform mark",
+      menubar_markup is not None and menubar_markup.group(1).count("<i></i>") == 9
+      and ".menubar-wave i:nth-child(9)" in styles)
 check("final CTA is Mac-only and last before the footer",
       "Native to your Mac." in index
       and "Apple Silicon · macOS 14+" in index
@@ -283,6 +346,25 @@ check("demo page canonical and visual-preview truth are present",
       and "See the flow." in demo
       and "never accesses your microphone" in demo
       and "doesn’t perform live dictation" in demo)
+share_image = ROOT / "assets" / "whisprtyper-share.png"
+share_bytes = share_image.read_bytes() if share_image.exists() else b""
+share_size = (
+    int.from_bytes(share_bytes[16:20], "big"),
+    int.from_bytes(share_bytes[20:24], "big"),
+) if share_bytes.startswith(b"\x89PNG\r\n\x1a\n") and len(share_bytes) >= 24 else (0, 0)
+check("homepage has crawlable rich-share metadata and a dedicated 1200x630 image",
+      f'<meta property="og:url" content="{ORIGIN}/">' in index
+      and f'<meta property="og:image" content="{ORIGIN}/assets/whisprtyper-share.png">' in index
+      and '<meta property="og:image:width" content="1200">' in index
+      and '<meta property="og:image:height" content="630">' in index
+      and '<meta name="twitter:card" content="summary_large_image">' in index
+      and f'<meta name="twitter:image" content="{ORIGIN}/assets/whisprtyper-share.png">' in index
+      and share_size == (1200, 630), f"image size={share_size}")
+check("canonical/share metadata no longer points crawlers at the protected Vercel alias",
+      "whisprtyper.vercel.app" not in index and "whisprtyper.vercel.app" not in demo)
+sitemap = (ROOT / "sitemap.xml").read_text(encoding="utf-8")
+check("sitemap includes the canonical demo page",
+      f"<loc>{ORIGIN}/demo.html</loc>" in sitemap)
 for api in ["getUserMedia", "mediaDevices", "AudioContext", "SpeechRecognition"]:
     check(f"no {api} in demo.html", api not in demo)
 
@@ -304,6 +386,9 @@ for name, text in [("index.html", index), ("script.js", script)]:
 for page in ["privacy.html", "support.html", "demo.html"]:
     text = page_text[page]
     check(f"{page} keeps canonical origin", ORIGIN in text)
+check("support page states the complete Apple Silicon requirement",
+      "macOS 14 or later on Apple Silicon" in page_text["support.html"]
+      and "There is no Intel build" in page_text["support.html"])
 
 print()
 if failures:

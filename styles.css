@@ -110,6 +110,41 @@ kbd {
 }
 .skip-link:focus { top: 0; }
 
+.motion-toggle {
+  position: fixed;
+  right: max(14px, env(safe-area-inset-right));
+  bottom: max(14px, env(safe-area-inset-bottom));
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgba(29, 29, 31, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 254, 249, 0.88);
+  color: var(--ink);
+  box-shadow: 0 8px 24px rgba(29, 29, 31, 0.12);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+  cursor: pointer;
+}
+.motion-toggle:hover { background: #fffef9; }
+.motion-toggle-glyph {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.14em;
+  transform: translateX(-0.04em);
+}
+.motion-paused .motion-toggle-glyph {
+  font-size: 14px;
+  letter-spacing: 0;
+  transform: translateX(0.08em);
+}
+html:not(.js) .motion-toggle { display: none; }
+
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -355,9 +390,12 @@ main > section.bleed {
    the path start, one parked off-path) form the no-JS/reduced-motion
    diagram. */
 
-.hero-flow {
+.hero .hero-flow {
+  align-self: stretch;
   margin: clamp(22px, 3.5vh, 38px) 0 0;
-  width: 100%;
+  width: auto;
+  max-width: none;
+  margin-inline: calc(50% - 50vw);
 }
 
 .hero-stage {
@@ -365,7 +403,7 @@ main > section.bleed {
   overflow: hidden;
   width: 100%;
   height: clamp(280px, 36vh, 400px);
-  border-radius: var(--radius-lg);
+  border-radius: 0;
   background: radial-gradient(62% 58% at 50% 52%, rgba(111, 99, 224, 0.09), transparent 72%);
 }
 
@@ -398,8 +436,99 @@ main > section.bleed {
   letter-spacing: -0.01em;
   pointer-events: none;
 }
+.hero-measure-probe { opacity: 0; }
 .hero-sentence-in { fill: rgba(76, 74, 70, 0.58); }
 .hero-sentence-out { fill: var(--ivory); }
+
+/* Original editorial speaking bust. The entire figure is static except for
+   the mouth cavity/tongue and lower lip, so the loop reads as speech rather
+   than a distracting character animation. */
+.hero-avatar {
+  --avatar-ink: #111113;
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: calc(52% - 10px);
+  width: auto;
+  height: min(calc(52% - 14px), 158px);
+  aspect-ratio: 200 / 184;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+}
+.hero-avatar svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.hero-avatar path,
+.hero-avatar circle,
+.hero-avatar ellipse {
+  vector-effect: non-scaling-stroke;
+}
+.hero-avatar-halo { fill: #ded9ff; }
+.hero-avatar-ink {
+  stroke: var(--avatar-ink);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.hero-avatar-torso { fill: #7167dc; }
+.hero-avatar-neck,
+.hero-avatar-head,
+.hero-avatar-ear { fill: #f3ad68; }
+.hero-avatar-hair { fill: #1d4d3e; }
+.hero-avatar-collar { fill: #ff7058; }
+.hero-avatar-hair-accent,
+.hero-avatar-ear-line,
+.hero-avatar-brow,
+.hero-avatar-cheek,
+.hero-avatar-upper-lip,
+.hero-avatar-lower-lip,
+.hero-avatar-shirt-line {
+  fill: none;
+  stroke: var(--avatar-ink);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.hero-avatar-hair-accent,
+.hero-avatar-brow,
+.hero-avatar-upper-lip,
+.hero-avatar-lower-lip { stroke-width: 5; }
+.hero-avatar-ear-line,
+.hero-avatar-cheek,
+.hero-avatar-shirt-line { stroke-width: 3.5; }
+.hero-avatar-eye {
+  fill: #fffef5;
+  stroke: var(--avatar-ink);
+  stroke-width: 3.5;
+  stroke-linejoin: round;
+}
+.hero-avatar-pupil,
+.hero-avatar-mouth-cavity { fill: var(--avatar-ink); }
+.hero-avatar-tongue { fill: #ff7058; }
+.hero-avatar-mouth-open {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hero-avatar-mouth-open 1.7s ease-in-out infinite;
+}
+.hero-avatar-lower-lip {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hero-avatar-lower-lip 1.7s ease-in-out infinite;
+}
+@keyframes hero-avatar-mouth-open {
+  0%, 7%, 22%, 37%, 52%, 70%, 100% { transform: scaleY(0.08); }
+  12%, 17%, 29%, 33%, 44%, 48%, 59%, 64% { transform: scaleY(1.5); }
+}
+@keyframes hero-avatar-lower-lip {
+  0%, 7%, 22%, 37%, 52%, 70%, 100% { transform: translateY(0); }
+  12%, 17%, 29%, 33%, 44%, 48%, 59%, 64% { transform: translateY(6px); }
+}
+.motion-paused .hero-avatar-mouth-open,
+.motion-paused .hero-avatar-lower-lip {
+  animation-play-state: paused !important;
+}
 
 /* Warm outlined processing pill above both sentence layers. */
 .voice-pill.hero-pill {
@@ -774,11 +903,15 @@ main > section.bleed {
   border-radius: 2px;
   background: var(--ink);
 }
-.menubar-wave i:nth-child(1) { height: 6px; }
-.menubar-wave i:nth-child(2) { height: 12px; }
-.menubar-wave i:nth-child(3) { height: 15px; }
+.menubar-wave i:nth-child(1) { height: 5px; }
+.menubar-wave i:nth-child(2) { height: 9px; }
+.menubar-wave i:nth-child(3) { height: 14px; }
 .menubar-wave i:nth-child(4) { height: 10px; }
-.menubar-wave i:nth-child(5) { height: 5px; }
+.menubar-wave i:nth-child(5) { height: 16px; }
+.menubar-wave i:nth-child(6) { height: 11px; }
+.menubar-wave i:nth-child(7) { height: 14px; }
+.menubar-wave i:nth-child(8) { height: 8px; }
+.menubar-wave i:nth-child(9) { height: 5px; }
 
 /* ---------- FAQ ---------- */
 
@@ -1029,9 +1162,9 @@ main > section.bleed {
   font-size: 14.5px;
 }
 
-/* ---------- 2. Role marquee ---------- */
+/* ---------- 2. Verified company proof marquee ---------- */
 
-.roles-card {
+.company-card {
   margin-inline: clamp(8px, 1.2vw, 20px);
   border-radius: clamp(28px, 3.2vw, 48px);
   background: var(--pine);
@@ -1040,55 +1173,76 @@ main > section.bleed {
   text-align: center;
   padding: clamp(44px, 6.5vw, 92px) 0;
 }
-.roles-card h2 {
+.company-card h2 {
   color: #f6f2e6;
   font-size: clamp(30px, 4.2vw, 54px);
-  margin-bottom: clamp(20px, 3.5vw, 40px);
+  margin-bottom: 12px;
   padding-inline: var(--gutter);
 }
-.roles-marquee { overflow: hidden; }
-.roles-track { display: block; }
-.roles-list {
+.company-lede {
+  max-width: 720px;
+  margin: 0 auto;
+  padding-inline: var(--gutter);
+  color: rgba(240, 236, 223, 0.72);
+  font-size: clamp(15px, 1.8vw, 18px);
+}
+.company-marquee {
+  margin-top: clamp(30px, 5vw, 58px);
+  overflow: hidden;
+}
+.company-track { display: block; }
+.company-list {
   list-style: none;
   margin: 0;
   padding: 0 var(--gutter);
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  align-items: baseline;
-  column-gap: 0.55em;
-  font-family: var(--serif-display);
-  font-size: clamp(40px, 8.4vw, 118px);
-  line-height: 1.16;
-  letter-spacing: 0.01em;
-  color: #f4efe1;
+  align-items: center;
+  gap: clamp(18px, 3vw, 44px);
   white-space: nowrap;
 }
-.roles-track .roles-list[aria-hidden="true"] { display: none; }
-.roles-dot { color: rgba(244, 239, 225, 0.38); }
-.roles-note {
-  margin: clamp(20px, 3.5vw, 34px) auto 0;
+.company-list li {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(10px, 1.4vw, 16px);
+  color: #f4efe1;
+  font-family: var(--serif-display);
+  font-size: clamp(34px, 6vw, 82px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.company-list img {
+  width: clamp(34px, 4.2vw, 58px);
+  height: clamp(34px, 4.2vw, 58px);
+  filter: invert(1);
+  opacity: 0.94;
+}
+.company-track .company-list[aria-hidden="true"] { display: none; }
+.company-note {
+  margin: clamp(28px, 4vw, 44px) auto 0;
   padding-inline: var(--gutter);
-  color: rgba(240, 236, 223, 0.62);
-  font-size: 15px;
+  color: rgba(240, 236, 223, 0.58);
+  font-size: 13.5px;
 }
 
-/* The marquee only slides when JS marks it running (in view, tab visible,
-   motion allowed). Without JS or under reduced motion the single wrapped
-   role row above stays complete and static. */
+/* Motion is visibility-, preference-, and user-pause-gated. Without JS or
+   under reduced motion the first complete list wraps and remains readable. */
 @media (prefers-reduced-motion: no-preference) {
-  .js .roles-track {
+  .js .company-track {
     display: flex;
     width: max-content;
-    animation: marquee-slide 46s linear infinite;
+    animation: marquee-slide 38s linear infinite;
     animation-play-state: paused;
   }
-  .js .roles-track .roles-list {
+  .js .company-track .company-list {
     flex-wrap: nowrap;
-    padding: 0 0.55em 0 0;
+    justify-content: flex-start;
+    padding: 0 clamp(38px, 5vw, 72px) 0 0;
   }
-  .js .roles-track .roles-list[aria-hidden="true"] { display: flex; }
-  .js .roles-marquee.is-running .roles-track { animation-play-state: running; }
+  .js .company-track .company-list[aria-hidden="true"] { display: flex; }
+  .js .company-marquee.is-running .company-track { animation-play-state: running; }
+  .motion-paused .company-track { animation-play-state: paused !important; }
 }
 @keyframes marquee-slide {
   to { transform: translateX(-50%); }
@@ -1116,14 +1270,19 @@ main > section.bleed {
 
 /* Strict 30 / 70 desktop ratio between the two cards. */
 .speed-grid {
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
   gap: 14px;
   align-items: stretch;
 }
 .speed-card {
+  position: relative;
+  z-index: 1;
   border-radius: var(--radius-lg);
   padding: clamp(24px, 3.4vw, 40px);
+  padding-bottom: clamp(104px, 11vw, 138px);
   display: flex;
   flex-direction: column;
 }
@@ -1167,36 +1326,51 @@ main > section.bleed {
 }
 .speed-note { font-size: 15px; }
 
-/* Decorative outgoing-sentence ribbon inside the voice card; entirely
-   separate from the hero SVG conveyor and its IDs. */
-.speed-ribbon {
-  margin-top: auto;
-  width: 114%;
-  margin-left: -7%;
-  transform: rotate(-2deg) translateY(4px);
-  background: var(--lavender);
-  color: #38307c;
-  border-radius: 999px;
+/* One SVG word path spans both cards. Individual words are positioned by JS
+   so their local velocity can rise from keyboard pace to voice pace. */
+.speed-flow-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
   overflow: hidden;
-  padding: 10px 0;
-  white-space: nowrap;
-  font-weight: 600;
-  font-size: 15px;
+  border-radius: var(--radius-lg);
+  pointer-events: none;
 }
-.ribbon-track span {
-  display: inline-block;
-  padding-inline: 0.35em;
+.speed-flow-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
-.ribbon-track span + span { display: none; }
-@media (prefers-reduced-motion: no-preference) {
-  .js .ribbon-track {
-    display: flex;
-    width: max-content;
-    animation: marquee-slide 18s linear infinite;
-    animation-play-state: paused;
-  }
-  .js .ribbon-track span + span { display: inline-block; }
-  .js .speed-ribbon.is-running .ribbon-track { animation-play-state: running; }
+.speed-flow-track-base,
+.speed-flow-track-voice {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.speed-flow-track-base {
+  stroke: rgba(48, 45, 41, 0.24);
+  stroke-width: 3;
+}
+.speed-flow-track-voice {
+  stroke: var(--lavender);
+  stroke-width: 44;
+}
+.speed-flow-word {
+  fill: #625e57;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+.speed-flow-word-voice { fill: #38307c; }
+
+@media (max-width: 760px) {
+  .speed-flow-track-voice { stroke-width: 38; }
+  .speed-flow-word { font-size: 12.5px; }
+  .speed-card { padding-bottom: 94px; }
 }
 
 /* ---------- 4. Workflow statement ---------- */
@@ -1423,6 +1597,7 @@ main > section.bleed {
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .motion-toggle { display: none; }
   .js .reveal {
     opacity: 1;
     transform: none;
@@ -1433,18 +1608,28 @@ main > section.bleed {
   .nav-cta { transition: none; }
   .nav-cta:hover,
   .nav-cta:active { transform: none; }
+  .hero-avatar-mouth-open,
+  .hero-avatar-lower-lip {
+    animation: none !important;
+  }
+  .hero-avatar-mouth-open { transform: scaleY(0.08); }
+  .hero-avatar-lower-lip { transform: translateY(0); }
 }
 
 /* ---------- Responsive ---------- */
 
 @media (max-width: 980px) {
   .speed-grid { grid-template-columns: 1fr; }
-  .speed-card-voice { order: -1; min-height: clamp(260px, 62vw, 360px); }
+  .speed-card-voice { min-height: clamp(260px, 62vw, 360px); }
 }
 
 @media (max-width: 760px) {
   :where(#apps, #speed, #features, #faq, #download) {
     scroll-margin-top: 124px;
+  }
+  .motion-toggle {
+    right: max(10px, env(safe-area-inset-right));
+    bottom: max(10px, env(safe-area-inset-bottom));
   }
   .site-header {
     top: 8px;
@@ -1497,6 +1682,11 @@ main > section.bleed {
      connected through the pill; nothing stacks under it. JS rebuilds the SVG
      viewBox to this rendered pixel size, so text is never stretched. */
   .hero-stage { height: clamp(230px, 64vw, 300px); }
+  .hero-avatar {
+    top: calc(52% - 8px);
+    width: auto;
+    height: min(calc(52% - 12px), 96px);
+  }
   .hero-sentence-copy { font-size: 13.5px; }
   /* Without JS the authored 1000x380 diagram letterboxes down on phones, so
      the static sentence segment uses a larger em size to stay legible. */
@@ -1505,7 +1695,7 @@ main > section.bleed {
 }
 
 @media (max-width: 620px) {
-  .roles-list { font-size: clamp(34px, 10.5vw, 52px); }
+  .company-list { font-size: clamp(34px, 10.5vw, 52px); }
   .speed-card-voice .wpm-num { font-size: clamp(84px, 26vw, 120px); }
 }
 
@@ -1561,7 +1751,7 @@ main > section.bleed {
   .hero-pill .pill-spinner circle,
   .hero-pill .pill-check path { stroke: CanvasText; }
   .ink-card,
-  .roles-card,
+  .company-card,
   .speed-card-keys,
   .speed-card-voice,
   .feature-card {
@@ -1578,11 +1768,10 @@ main > section.bleed {
     border: 1px solid #000000;
   }
   .app-tile img { filter: none; }
-  .speed-ribbon {
-    background: Canvas;
-    color: CanvasText;
-    border: 1px solid CanvasText;
-  }
+  .speed-flow-track-base,
+  .speed-flow-track-voice { stroke: CanvasText; }
+  .speed-flow-word,
+  .speed-flow-word-voice { fill: CanvasText; }
   .motif-wave i { background: CanvasText; }
   .model-bar { background: Canvas; border: 1px solid CanvasText; }
   .model-bar i { background: CanvasText; }
@@ -1602,4 +1791,10 @@ main > section.bleed {
   }
   .nav::before,
   .nav::after { display: none; }
+  .hero-avatar-mouth-open,
+  .hero-avatar-lower-lip {
+    animation: none !important;
+  }
+  .hero-avatar-mouth-open { transform: scaleY(0.08); }
+  .hero-avatar-lower-lip { transform: translateY(0); }
 }

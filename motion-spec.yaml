@@ -35,8 +35,9 @@ scenes:
     viewBox: rendered-css-pixels
     path:
       id: hero-path
-      shape: shallow two-cubic valley
+      shape: full-bleed shallow entry hook into two-cubic valley
       starts: off-left
+      selfIntersects: false
       crosses: measured pill center
       ends: off-right
       textDistortion: none
@@ -54,6 +55,8 @@ scenes:
       opacity: 1
       speedPxPerSecond: 78
       gapEm: 2.4
+      pitchMeasurement: unpathed off-canvas SVG text probe
+      webkitTextPathMeasurementForbidden: true
       loop: modulo-two-pitches
     ribbon:
       selector: ".hero-ribbon"
@@ -94,9 +97,48 @@ scenes:
     lifecycle:
       suspendWhenOffscreen: true
       suspendWhenDocumentHidden: true
+      suspendWhenUserPaused: true
       resizeObserver: true
       maxFrameDeltaMs: 250
     noAudioApis: true
+    avatar:
+      selector: ".hero-avatar"
+      format: original-inline-svg
+      pose: right-facing-upper-body-profile
+      style: flat-editorial-heavy-outline
+      motion:
+        durationMs: 1700
+        loop: true
+        movingParts: [mouth-cavity, tongue, lower-lip]
+        staticParts: [head, eye, hair, neck, torso]
+      userPause: freeze
+      reducedMotion: mouth-closed
+  - id: company-proof-marquee
+    selector: ".company-marquee"
+    evidence: product-owner-supplied workplace usage
+    companies: [NVIDIA, Google, Apple, Notion]
+    disclaimer: individual users; no company partnership or endorsement implied
+    loop: css-marquee-duplicated-list
+    lifecycle:
+      suspendWhenOffscreen: true
+      suspendWhenDocumentHidden: true
+      suspendWhenUserPaused: true
+    reducedMotion: static wrapped logo list
+  - id: speed-path
+    selector: "#speed-flow"
+    render: native-svg-positioned-words
+    path: shared curve across keyboard and voice cards
+    wordVelocity:
+      keyboardPxPerSecond: 28
+      voicePxPerSecond: 108
+      ramp: smooth from measured voice-card path entry across the next 12% of path progress
+      stackedDirection: keyboard leg left-to-right, connected voice return leg right-to-left
+    lifecycle:
+      suspendWhenOffscreen: true
+      suspendWhenDocumentHidden: true
+      suspendWhenUserPaused: true
+      resizeObserver: true
+    reducedMotion: static complete path and representative words
   - id: interactive-demo
     selector: "#voice-demo"
     interaction: pointer-keyboard-control
