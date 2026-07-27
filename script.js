@@ -38,7 +38,7 @@
   var status = document.querySelector("#demo-status");
   if (!demo || !pill || !input || !status) return;
 
-  var transcript = input.value;
+  var transcript = input.getAttribute("data-transcript") || input.value;
   var previousValue = input.value;
   var activeOwner = null;
   var activationTimer = null;
@@ -439,5 +439,176 @@
 
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(queueGeometryRefresh);
+  }
+})();
+
+/* ---------- App compatibility train ----------
+   The 24 brand tiles ride one deterministic conveyor: each tile's position
+   is a pure function of elapsed transport time, its index, and the measured
+   stage size (x advances left-to-right, y follows a broad fixed sine curve).
+   The loop runs only while the stage is on screen, the tab is visible, and
+   reduced motion is not requested; otherwise the authored static flex
+   arrangement from the stylesheet remains, which is also the no-JS state. */
+(function () {
+  "use strict";
+
+  var stage = document.getElementById("apps-stage");
+  var train = document.getElementById("app-train");
+  if (!stage || !train) return;
+  var tiles = Array.prototype.slice.call(train.querySelectorAll(".app-tile"));
+  if (!tiles.length) return;
+
+  var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var SPEED = 44;         /* CSS px per second, moving left-to-right */
+  var WAVE_CYCLES = 1.25; /* broad rise and fall across the stage width */
+  var rafId = null;
+  var lastTs = null;
+  var elapsed = 0;
+  var inView = false;
+  var resizeRaf = null;
+  var geom = null;
+
+  function measure() {
+    if (!stage.classList.contains("is-animated")) { geom = null; return; }
+    var rect = stage.getBoundingClientRect();
+    var tileSize = tiles[0].offsetWidth || 64;
+    if (!rect.width || !rect.height) { geom = null; return; }
+    var spacing = Math.max(tileSize * 1.55, (rect.width + tileSize * 4) / tiles.length);
+    geom = {
+      tile: tileSize,
+      spacing: spacing,
+      span: spacing * tiles.length,
+      midY: rect.height / 2,
+      amp: Math.max(10, (rect.height - tileSize) / 2 - 12),
+      k: (Math.PI * 2 * WAVE_CYCLES) / rect.width
+    };
+  }
+
+  function render() {
+    if (!geom) return;
+    var shift = (elapsed / 1000) * SPEED;
+    for (var i = 0; i < tiles.length; i++) {
+      var pos = (i * geom.spacing + shift) % geom.span;
+      if (pos < 0) pos += geom.span;
+      var x = pos - geom.spacing;
+      var y = geom.midY - geom.tile / 2 + geom.amp * Math.sin(x * geom.k + 0.6);
+      tiles[i].style.transform = "translate3d(" + x.toFixed(2) + "px, " + y.toFixed(2) + "px, 0)";
+    }
+  }
+
+  function frame(timestamp) {
+    if (lastTs !== null) elapsed += Math.min(timestamp - lastTs, 250);
+    lastTs = timestamp;
+    render();
+    rafId = window.requestAnimationFrame(frame);
+  }
+
+  function start() {
+    if (rafId !== null) return;
+    stage.classList.add("is-animated");
+    measure();
+    render();
+    lastTs = null;
+    rafId = window.requestAnimationFrame(frame);
+  }
+
+  function stop() {
+    if (rafId !== null) window.cancelAnimationFrame(rafId);
+    rafId = null;
+    lastTs = null;
+  }
+
+  function restoreStatic() {
+    stop();
+    elapsed = 0;
+    geom = null;
+    stage.classList.remove("is-animated");
+    tiles.forEach(function (tile) { tile.style.transform = ""; });
+  }
+
+  function sync() {
+    if (reducedMotion.matches) {
+      restoreStatic();
+      return;
+    }
+    if (inView && !document.hidden) start();
+    else stop();
+  }
+
+  function queueMeasure() {
+    if (resizeRaf !== null) window.cancelAnimationFrame(resizeRaf);
+    resizeRaf = window.requestAnimationFrame(function () {
+      resizeRaf = null;
+      measure();
+      render();
+    });
+  }
+
+  if ("ResizeObserver" in window) {
+    new ResizeObserver(queueMeasure).observe(stage);
+  } else {
+    window.addEventListener("resize", queueMeasure, { passive: true });
+  }
+
+  if ("IntersectionObserver" in window) {
+    var stageObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) { inView = entry.isIntersecting; });
+      sync();
+    }, { threshold: 0.1 });
+    stageObserver.observe(stage);
+  } else {
+    inView = true;
+    sync();
+  }
+
+  document.addEventListener("visibilitychange", sync);
+  if (typeof reducedMotion.addEventListener === "function") {
+    reducedMotion.addEventListener("change", sync);
+  } else if (typeof reducedMotion.addListener === "function") {
+    reducedMotion.addListener(sync);
+  }
+})();
+
+/* ---------- Marquee visibility control ----------
+   The role marquee and the speed-card ribbon are CSS transports that are
+   paused by default. JS marks each [data-marquee] as running only while it
+   intersects the viewport, the document is visible, and reduced motion is
+   off. Without JS the class never appears and the static wrapped layout
+   from the stylesheet stands. */
+(function () {
+  "use strict";
+
+  var marquees = Array.prototype.slice.call(document.querySelectorAll("[data-marquee]"));
+  if (!marquees.length) return;
+
+  var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var visible = marquees.map(function () { return false; });
+
+  function apply() {
+    marquees.forEach(function (element, index) {
+      var run = visible[index] && !document.hidden && !reducedMotion.matches;
+      element.classList.toggle("is-running", run);
+    });
+  }
+
+  if ("IntersectionObserver" in window) {
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var index = marquees.indexOf(entry.target);
+        if (index !== -1) visible[index] = entry.isIntersecting;
+      });
+      apply();
+    }, { threshold: 0.05 });
+    marquees.forEach(function (element) { observer.observe(element); });
+  } else {
+    visible = marquees.map(function () { return true; });
+    apply();
+  }
+
+  document.addEventListener("visibilitychange", apply);
+  if (typeof reducedMotion.addEventListener === "function") {
+    reducedMotion.addEventListener("change", apply);
+  } else if (typeof reducedMotion.addListener === "function") {
+    reducedMotion.addListener(apply);
   }
 })();

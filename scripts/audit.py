@@ -31,12 +31,34 @@ def check(name, ok, detail=""):
 
 
 index = (ROOT / "index.html").read_text(encoding="utf-8")
+demo = (ROOT / "demo.html").read_text(encoding="utf-8")
 script = (ROOT / "script.js").read_text(encoding="utf-8")
 styles = (ROOT / "styles.css").read_text(encoding="utf-8")
+page_text = {
+    page: (ROOT / page).read_text(encoding="utf-8")
+    for page in ["index.html", "demo.html", "privacy.html", "support.html"]
+}
 
-# --- Download links -------------------------------------------------------
+# --- Download links and Apple icon controls -------------------------------
 href_count = index.count(f'href="{DOWNLOAD_URL}"')
-check("seven exact download hrefs in index.html", href_count == 7, f"found {href_count}")
+check("six exact download hrefs in index.html", href_count == 6, f"found {href_count}")
+for page, text in page_text.items():
+    download_anchors = re.findall(
+        rf'<a\b[^>]*href="{re.escape(DOWNLOAD_URL)}"[^>]*>(.*?)</a>', text, re.S
+    )
+    check(
+        f"every release link in {page} has an Apple icon",
+        all('class="apple-mark"' in body and 'href="#apple-mark-def"' in body
+            for body in download_anchors),
+        f"checked {len(download_anchors)} link(s)",
+    )
+    anchor_bodies = re.findall(r'<a\b[^>]*>(.*?)</a>', text, re.S)
+    labeled_controls = [body for body in anchor_bodies if "Download for Mac" in body]
+    check(
+        f"every Download for Mac control in {page} has an Apple icon",
+        all('class="apple-mark"' in body for body in labeled_controls),
+        f"checked {len(labeled_controls)} control(s)",
+    )
 
 jsonld_match = re.search(
     r'<script type="application/ld\+json">\s*(\{.*?\})\s*</script>', index, re.S
@@ -60,7 +82,7 @@ check("canonical link is live origin", f'<link rel="canonical" href="{ORIGIN}/">
 # --- Platform / channel messaging ----------------------------------------
 check("Apple Silicon messaging present", "Apple Silicon" in index)
 check("macOS 14+ messaging present", "macOS 14+" in index or "macOS&nbsp;14" in index)
-check("Mac App Store coming soon", "Coming soon" in index and "Mac App Store" in index)
+check("Mac App Store coming soon", re.search(r"Mac App Store.{0,80}coming soon|coming soon.{0,80}Mac App Store", index, re.I | re.S) is not None)
 check("manual direct updates messaging", "Direct-download updates are currently manual." in index)
 intel_hits = re.findall(r"\bIntel\b", index, re.I)
 check(
@@ -69,8 +91,32 @@ check(
     f"found {len(intel_hits)} occurrence(s)",
 )
 
-# --- Hero continuous through-pill scene -----------------------------------
-check("hero stage exists", 'id="hero-stage"' in index and 'aria-hidden="true"' in index)
+# --- Title-led hero and continuous through-pill scene ----------------------
+hero_section_match = re.search(r'<section class="hero" id="top">(.*?)</section>', index, re.S)
+check("hero section exists", hero_section_match is not None)
+hero_section = hero_section_match.group(1) if hero_section_match else ""
+check("hero uses the exact title-led product message",
+      '<h1 class="hero-title">Type faster with your voice.</h1>' in hero_section)
+hero_cta_bodies = re.findall(
+    rf'<a\b[^>]*href="{re.escape(DOWNLOAD_URL)}"[^>]*>(.*?)</a>', hero_section, re.S
+)
+hero_cta_labels = [re.sub(r"<[^>]+>", "", body).strip() for body in hero_cta_bodies]
+check("hero has exactly one Apple-icon Download for Mac CTA",
+      hero_cta_labels == ["Download for Mac"]
+      and all('class="apple-mark"' in body for body in hero_cta_bodies),
+      f"found {hero_cta_labels}")
+removed_hero_tokens = [
+    'class="eyebrow"', 'class="hero-sub"', 'class="hero-note"',
+    "See how it works", 'class="hero-stage-label"',
+    'class="hero-stage-tag', 'class="hero-stage-caption"',
+]
+check("hero contains no redundant explanatory copy or labels",
+      all(token not in hero_section for token in removed_hero_tokens))
+check("hero owns the first viewport on desktop and mobile",
+      "min-height: calc(100svh - 60px);" in styles
+      and "min-height: calc(100svh - 107px);" in styles
+      and ".hero-flow {\n    margin-top: auto;" in styles)
+check("hero stage exists", 'id="hero-stage"' in hero_section and 'aria-hidden="true"' in hero_section)
 check("hero shared flow path exists", 'id="hero-path"' in index)
 check("hero input/output clips exist",
       'id="hero-clip-in"' in index and 'id="hero-clip-out"' in index)
@@ -110,8 +156,6 @@ check("authored input and output offsets are paired numeric units",
       f"input={input_offsets}, output={output_offsets}")
 check("no rectangular static hero output remains",
       'class="hero-out"' not in index and ".hero-out" not in styles)
-check("hero flow explained in visible text",
-      'class="hero-stage-caption"' in index and "same sentence" in index)
 check("hero stage/ribbon styles exist", ".hero-stage" in styles and ".hero-ribbon" in styles)
 check("hero module exists in script.js", 'getElementById("hero-stage")' in script)
 
@@ -176,6 +220,72 @@ check("mobile keeps one connected through-pill composition",
       and 'ribbon.setAttribute("stroke-width", compact ? "28" : "34")' in script
       and ".hero-stage { height: clamp(230px, 64vw, 300px); }" in styles)
 
+# --- Expanded landing sections --------------------------------------------
+APP_SLUGS = [
+    "discord", "telegram", "snapchat", "notion", "gmail", "googlechrome",
+    "safari", "figma", "linear", "github", "xcode", "todoist", "obsidian",
+    "zoom", "x", "instagram", "whatsapp", "messenger", "googledrive",
+    "reddit", "spotify", "firefoxbrowser", "dropbox", "protonmail",
+]
+rendered_slugs = re.findall(r'<li class="app-tile[^"]*" data-app="([^"]+)"', index)
+check("app train contains exactly the required 24 apps",
+      rendered_slugs == APP_SLUGS, f"found {rendered_slugs}")
+check("all app train entries use their downloaded local SVG",
+      all(f'src="assets/app-icons/{slug}.svg"' in index for slug in APP_SLUGS)
+      and all((ROOT / "assets" / "app-icons" / f"{slug}.svg").stat().st_size > 200
+              for slug in APP_SLUGS))
+check("app train has deterministic visibility-aware motion",
+      'getElementById("apps-stage")' in script
+      and "IntersectionObserver" in script
+      and 'document.addEventListener("visibilitychange", sync)' in script
+      and "restoreStatic" in script
+      and "reducedMotion.matches" in script)
+check("app compatibility copy is Mac-truthful",
+      "Works in every app you already use." in index
+      and "supported text field" in index
+      and "Secure password fields" in index)
+
+ROLES = [
+    "FOUNDERS", "DESIGNERS", "ENGINEERS", "OPERATORS", "RESEARCHERS",
+    "CREATORS", "WRITERS", "CONSULTANTS",
+]
+check("professional marquee uses role labels instead of fake customer logos",
+      "For people who write all day." in index
+      and all(role in index for role in ROLES)
+      and not re.search(r"trusted by|used by (people|professionals) at", index, re.I))
+check("role and speed marquees are visibility and reduced-motion controlled",
+      "[data-marquee]" in script
+      and ".roles-marquee.is-running" in styles
+      and ".speed-ribbon.is-running" in styles)
+
+check("speed section keeps the requested 30/70 contract",
+      'id="speed"' in index
+      and "Speak up to 4× faster." in index
+      and '<span class="wpm-num">45</span>' in index
+      and '<span class="wpm-num">220</span>' in index
+      and "grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);" in styles)
+check("speed section has demo and Apple-icon download actions",
+      '<a class="button button-ghost" href="demo.html">Try the demo</a>' in index
+      and re.search(r'class="speed-actions".*?class="apple-mark"', index, re.S) is not None)
+check("workflow statement and four factual feature stories exist",
+      "A tool that adapts to your workflow." in index
+      and all(title in index for title in [
+          "Privacy first", "Local by default", "Instant where you type",
+          "Native and out of the way",
+      ]))
+check("final CTA is Mac-only and last before the footer",
+      "Native to your Mac." in index
+      and "Apple Silicon · macOS 14+" in index
+      and index.rfind('id="download"') > index.rfind('id="faq"'))
+
+check("demo page canonical and visual-preview truth are present",
+      f'<link rel="canonical" href="{ORIGIN}/demo.html">' in demo
+      and "See the flow." in demo
+      and "never accesses your microphone" in demo
+      and "doesn’t perform live dictation" in demo)
+for api in ["getUserMedia", "mediaDevices", "AudioContext", "SpeechRecognition"]:
+    check(f"no {api} in demo.html", api not in demo)
+
 # --- Forbidden claims and APIs -------------------------------------------
 FORBIDDEN = [
     r"rewrit", r"\bpolish", r"grammar", r"summariz",
@@ -191,8 +301,8 @@ for name, text in [("index.html", index), ("script.js", script)]:
         check(f"no {api} in {name}", api not in text)
 
 # --- Other pages keep their invariants ------------------------------------
-for page in ["privacy.html", "support.html"]:
-    text = (ROOT / page).read_text(encoding="utf-8")
+for page in ["privacy.html", "support.html", "demo.html"]:
+    text = page_text[page]
     check(f"{page} keeps canonical origin", ORIGIN in text)
 
 print()
