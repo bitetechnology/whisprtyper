@@ -113,6 +113,10 @@ scenes:
         staticParts: [head, eye, hair, neck, torso]
       userPause: freeze
       reducedMotion: mouth-closed
+      lifecycle:
+        suspendWhenOffscreen: true
+        suspendWhenDocumentHidden: true
+        suspendWhenUserPaused: true
   - id: company-proof-marquee
     selector: ".company-marquee"
     evidence: product-owner-supplied workplace usage
@@ -139,6 +143,9 @@ scenes:
       suspendWhenUserPaused: true
       resizeObserver: true
     reducedMotion: static complete path and representative words
+    noJavaScript:
+      sideBySide: authored static shared path
+      stacked: clean metric cards without a misaligned SVG overlay
   - id: interactive-demo
     selector: "#voice-demo"
     interaction: pointer-keyboard-control

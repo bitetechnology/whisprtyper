@@ -511,11 +511,17 @@ main > section.bleed {
   transform-box: fill-box;
   transform-origin: center;
   animation: hero-avatar-mouth-open 1.7s ease-in-out infinite;
+  animation-play-state: paused;
 }
 .hero-avatar-lower-lip {
   transform-box: fill-box;
   transform-origin: center;
   animation: hero-avatar-lower-lip 1.7s ease-in-out infinite;
+  animation-play-state: paused;
+}
+.hero-avatar.is-motion-active .hero-avatar-mouth-open,
+.hero-avatar.is-motion-active .hero-avatar-lower-lip {
+  animation-play-state: running;
 }
 @keyframes hero-avatar-mouth-open {
   0%, 7%, 22%, 37%, 52%, 70%, 100% { transform: scaleY(0.08); }
@@ -1048,7 +1054,7 @@ main > section.bleed {
 /* ---------- Editorial serif display for the big section statements ---------- */
 
 .apps-band h2,
-.roles-card h2,
+.company-card h2,
 .speed-head h2,
 .workflow-card h2,
 .features-heading,
@@ -1621,6 +1627,7 @@ main > section.bleed {
 @media (max-width: 980px) {
   .speed-grid { grid-template-columns: 1fr; }
   .speed-card-voice { min-height: clamp(260px, 62vw, 360px); }
+  html:not(.js) .speed-flow-stage { display: none; }
 }
 
 @media (max-width: 760px) {
@@ -1695,7 +1702,7 @@ main > section.bleed {
 }
 
 @media (max-width: 620px) {
-  .company-list { font-size: clamp(34px, 10.5vw, 52px); }
+  .company-list li { font-size: clamp(34px, 10.5vw, 52px); }
   .speed-card-voice .wpm-num { font-size: clamp(84px, 26vw, 120px); }
 }
 
