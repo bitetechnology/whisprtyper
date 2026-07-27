@@ -292,39 +292,27 @@
     pitch = sentenceAdvance + copyFontSize() * GAP_EM;
   }
 
-  /* Full-bleed, non-self-intersecting hook into a shallow valley. The entry
-     curl borrows the reference's energy without ever crossing itself, so
-     repeated text remains readable on every viewport. */
+  /* One restrained, shallow, non-self-intersecting S. It enters off-left just
+     below the pill center, crosses the measured center with a single smooth
+     inflection, and exits off-right just above it — no entry hook, abrupt
+     crest, or opposing steep arcs, so the moving text stays easy to scan. */
   function buildFlowPath(width, height, centerX, centerY) {
     var compact = width < 560;
     var overshoot = Math.max(compact ? 26 : 64, width * 0.075);
-    var inputRise = Math.min(height * (compact ? 0.12 : 0.34), compact ? 36 : 112);
-    var outputRise = Math.min(height * (compact ? 0.15 : 0.3), compact ? 44 : 96);
-    var startY = Math.max(22, centerY - inputRise);
-    var endY = Math.max(22, centerY - outputRise);
+    var sway = Math.min(height * (compact ? 0.11 : 0.15), compact ? 26 : 52);
     var startX = -overshoot;
     var endX = width + overshoot;
-    var hookTopX = width * (compact ? 0.1 : 0.085);
-    var hookEndX = width * (compact ? 0.24 : 0.2);
-    var hookLift = Math.min(height * (compact ? 0.075 : 0.13), compact ? 18 : 48);
-    var hookTopY = Math.max(compact ? 18 : 22, startY - hookLift);
-    var hookSettleY = startY + hookLift * 0.58;
-    var leftC2 = centerX * (compact ? 0.7 : 0.64);
-    var rightC1 = centerX + (width - centerX) * (compact ? 0.32 : 0.38);
-    var rightC2 = width * (compact ? 0.92 : 0.88);
+    var startY = centerY + sway;
+    var endY = centerY - sway;
+    var leftSpan = centerX - startX;
+    var rightSpan = endX - centerX;
 
     return "M " + startX.toFixed(2) + " " + startY.toFixed(2)
-      + " C " + (width * 0.015).toFixed(2) + " " + startY.toFixed(2)
-      + " " + (hookTopX * 0.55).toFixed(2) + " " + hookTopY.toFixed(2)
-      + " " + hookTopX.toFixed(2) + " " + hookTopY.toFixed(2)
-      + " C " + (hookTopX + (hookEndX - hookTopX) * 0.45).toFixed(2) + " " + hookTopY.toFixed(2)
-      + " " + (hookEndX - (hookEndX - hookTopX) * 0.22).toFixed(2) + " " + hookSettleY.toFixed(2)
-      + " " + hookEndX.toFixed(2) + " " + hookSettleY.toFixed(2)
-      + " C " + (hookEndX + width * 0.08).toFixed(2) + " " + hookSettleY.toFixed(2)
-      + " " + leftC2.toFixed(2) + " " + centerY.toFixed(2)
+      + " C " + (startX + leftSpan * 0.45).toFixed(2) + " " + startY.toFixed(2)
+      + " " + (centerX - leftSpan * 0.3).toFixed(2) + " " + (centerY + sway * 0.25).toFixed(2)
       + " " + centerX.toFixed(2) + " " + centerY.toFixed(2)
-      + " C " + rightC1.toFixed(2) + " " + centerY.toFixed(2)
-      + " " + rightC2.toFixed(2) + " " + endY.toFixed(2)
+      + " C " + (centerX + rightSpan * 0.3).toFixed(2) + " " + (centerY - sway * 0.25).toFixed(2)
+      + " " + (endX - rightSpan * 0.45).toFixed(2) + " " + endY.toFixed(2)
       + " " + endX.toFixed(2) + " " + endY.toFixed(2);
   }
 
@@ -634,6 +622,8 @@
   var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   var KEYBOARD_SPEED = 28;
   var VOICE_SPEED = 108;
+  var ENDPOINT_FADE_PX = 72;
+  var stackedLayout = false;
   var rafId = null;
   var lastTs = null;
   var cycleTime = 0;
@@ -672,18 +662,46 @@
 
   function buildSpeedPath(width, height, compact, keyBounds, voice) {
     if (compact) {
-      var keyY = Math.max(64, keyBounds.y + keyBounds.height - 48);
-      var voiceY = Math.max(keyY + 80, voice.y + voice.height - 48);
-      return "M -28 " + keyY.toFixed(2)
-        + " C " + (width * 0.34).toFixed(2) + " " + keyY.toFixed(2)
-        + " " + (width * 0.76).toFixed(2) + " " + (keyY - 5).toFixed(2)
-        + " " + (width - 12).toFixed(2) + " " + (keyY - 2).toFixed(2)
-        + " C " + (width - 4).toFixed(2) + " " + (keyY + 54).toFixed(2)
-        + " " + (width - 4).toFixed(2) + " " + (voiceY - 54).toFixed(2)
-        + " " + (width - 12).toFixed(2) + " " + voiceY.toFixed(2)
-        + " C " + (width * 0.72).toFixed(2) + " " + voiceY.toFixed(2)
-        + " " + (width * 0.34).toFixed(2) + " " + (voiceY - 8).toFixed(2)
-        + " -28 " + (voiceY - 4).toFixed(2);
+      /* Stacked cards get a broad soft S derived from the measured card
+         geometry: a low Keyboard leg runs left to right beneath that card's
+         copy, a contained right-hand bend sweeps down into the Voice card, a
+         wide middle return travels back toward the left inside its reserved
+         bottom band, and a low Voice leg exits right. Every interior control
+         point stays inside or just beside the stage. */
+      var keyLegY = Math.max(56, keyBounds.y + keyBounds.height - 46);
+      var exitLegY = voice.y + voice.height - 40;
+      /* Keep the middle return and lower exit legs clearly separated
+         (~118px centerlines) so the thick lavender stroke reads as a soft S
+         instead of merging into a U outline; the Voice card reserves a
+         matching bottom band below its copy. */
+      var returnLegY = Math.max(voice.y + 56, exitLegY - 118);
+      var rightBendX = width - 26;
+      var leftBendX = 30;
+      var drop = returnLegY - keyLegY;
+      var dropMidY = (keyLegY + returnLegY) / 2;
+      var settleMidY = (returnLegY + exitLegY) / 2;
+      return "M -30 " + keyLegY.toFixed(2)
+        + " C " + (width * 0.3).toFixed(2) + " " + keyLegY.toFixed(2)
+        + " " + (width * 0.52).toFixed(2) + " " + keyLegY.toFixed(2)
+        + " " + (width * 0.7).toFixed(2) + " " + (keyLegY + 3).toFixed(2)
+        + " C " + (width * 0.9).toFixed(2) + " " + (keyLegY + 8).toFixed(2)
+        + " " + rightBendX.toFixed(2) + " " + (keyLegY + drop * 0.3).toFixed(2)
+        + " " + rightBendX.toFixed(2) + " " + dropMidY.toFixed(2)
+        + " C " + rightBendX.toFixed(2) + " " + (keyLegY + drop * 0.76).toFixed(2)
+        + " " + (width * 0.88).toFixed(2) + " " + returnLegY.toFixed(2)
+        + " " + (width * 0.68).toFixed(2) + " " + returnLegY.toFixed(2)
+        + " C " + (width * 0.48).toFixed(2) + " " + returnLegY.toFixed(2)
+        + " " + (width * 0.3).toFixed(2) + " " + returnLegY.toFixed(2)
+        + " " + (width * 0.2).toFixed(2) + " " + (returnLegY + 4).toFixed(2)
+        + " C " + (width * 0.09).toFixed(2) + " " + (returnLegY + 9).toFixed(2)
+        + " " + leftBendX.toFixed(2) + " " + (returnLegY + 18).toFixed(2)
+        + " " + leftBendX.toFixed(2) + " " + settleMidY.toFixed(2)
+        + " C " + leftBendX.toFixed(2) + " " + (exitLegY - 16).toFixed(2)
+        + " " + (width * 0.12).toFixed(2) + " " + exitLegY.toFixed(2)
+        + " " + (width * 0.32).toFixed(2) + " " + exitLegY.toFixed(2)
+        + " C " + (width * 0.56).toFixed(2) + " " + exitLegY.toFixed(2)
+        + " " + (width * 0.8).toFixed(2) + " " + exitLegY.toFixed(2)
+        + " " + (width + 30).toFixed(2) + " " + exitLegY.toFixed(2);
     }
 
     var baseY = Math.max(80, height - Math.min(66, height * 0.17));
@@ -741,6 +759,10 @@
       var phase = parseFloat(word.getAttribute("data-phase")) || 0;
       var distance = distanceAtTime(cycleTime + phase * totalTravelTime);
       var point = path.getPointAtLength(distance);
+      /* The local tangent is always computed. Side-by-side layouts tilt each
+         word along it; stacked layouts keep every label at rotate(0) and use
+         it only to fade labels nearly out on the steep vertical connectors
+         between legs, so no word ever renders rotated or chopped mid-bend. */
       var tangentStart = point;
       var tangentEnd = path.getPointAtLength(Math.min(pathLength, distance + 1.5));
       if (distance >= pathLength - 1.5) {
@@ -750,7 +772,12 @@
       var angle = Math.atan2(tangentEnd.y - tangentStart.y, tangentEnd.x - tangentStart.x) * 180 / Math.PI;
       if (angle > 90) angle -= 180;
       if (angle < -90) angle += 180;
-      word.setAttribute("transform", "translate(" + point.x.toFixed(2) + " " + point.y.toFixed(2) + ") rotate(" + angle.toFixed(2) + ")");
+      var rotation = stackedLayout ? 0 : angle;
+      var slopeFade = stackedLayout ? 1 - 0.92 * smoothstep(38, 72, Math.abs(angle)) : 1;
+      var edgeDistance = Math.min(distance, pathLength - distance);
+      var fade = Math.max(0, Math.min(1, edgeDistance / ENDPOINT_FADE_PX)) * slopeFade;
+      word.setAttribute("opacity", fade.toFixed(3));
+      word.setAttribute("transform", "translate(" + point.x.toFixed(2) + " " + point.y.toFixed(2) + ") rotate(" + rotation.toFixed(2) + ")");
       word.classList.toggle("speed-flow-word-voice", isInVoice(point));
     });
   }
@@ -774,6 +801,7 @@
       height: voiceRect.height
     };
     var compact = voiceBounds.y >= keyBounds.y + keyBounds.height - 1;
+    stackedLayout = compact;
     svg.setAttribute("viewBox", "0 0 " + stageRect.width.toFixed(2) + " " + stageRect.height.toFixed(2));
     path.setAttribute("d", buildSpeedPath(stageRect.width, stageRect.height, compact, keyBounds, voiceBounds));
     voiceClip.setAttribute("x", voiceBounds.x.toFixed(2));

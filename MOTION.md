@@ -14,7 +14,7 @@ This is not a before/after card transition. Input and output are two color treat
 
 ## Composition
 
-- One responsive SVG path begins with a shallow non-self-intersecting hook, runs full-bleed from off-left, forms a calm valley through the measured pill center, and ends off-right.
+- One responsive SVG path runs full-bleed from off-left to off-right as a restrained, shallow, non-self-intersecting S. It has no entry hook, abrupt crest, or opposing steep arcs; it crosses the measured pill center with low vertical excursion so moving text remains easy to scan.
 - Two complete identical transcript copies, separated by one measured pitch, create a seamless loop.
 - Each copy is rendered twice with the exact same numeric `startOffset`:
   - input layer: muted gray, clipped left of the pill;
@@ -58,8 +58,8 @@ This is not a before/after card transition. Input and output are two color treat
 
 ## Hero speaking avatar
 
-- One original inline SVG editorial bust faces right immediately above the hero pill.
-- Only the mouth cavity, tongue, and lower lip animate. No head bob, blinking, arm movement, or full-body motion is permitted.
+- One original inline SVG editorial bust faces right immediately above the hero pill, in front of a single flat pastel backdrop blob that never moves.
+- Only the mouth cavity, tongue, and lower lip animate. No head bob, blinking, arm movement, backdrop motion, or full-body motion is permitted.
 - The speaking loop uses short irregular mouth openings over `1.7s`; the silhouette and thick outline remain stable.
 - User pause freezes the current mouth frame. Reduced motion and print show the mouth closed.
 - The CSS loop is paused by default and runs only while the avatar intersects the viewport, the document is visible, reduced motion is off, and the global pause is inactive.
@@ -67,8 +67,8 @@ This is not a before/after card transition. Input and output are two color treat
 
 ## WPM shared-path comparison
 
-- One SVG path spans the complete 30/70 keyboard/voice grid and curves gently near the card seam.
-- Individual word particles travel on that one path. They use a slow local velocity in the 45 WPM region and smoothly accelerate after entering the 220 WPM region; this cannot be represented by a single global `textPath startOffset` speed.
+- One SVG path spans the complete 30/70 keyboard/voice grid. Side-by-side cards use a shallow bridge; stacked cards use a broad soft S with a Keyboard top leg, contained right bend, wide leftward return in the Voice card, and low Voice exit leg. The return and exit centerlines stay ~118px apart inside the Voice card's reserved bottom band, both below its copy, so the thick stroke never merges into a U outline.
+- Individual word particles travel on that one path. They use a slow local velocity in the 45 WPM region and smoothly accelerate after entering the 220 WPM region (ramp start measured from the Voice card entry). The local tangent is computed in every layout: side-by-side words tilt along it, while stacked labels stay at `rotate(0)` and use it only to fade nearly out on near-vertical connectors, in addition to the clipped-endpoint fade.
 - The animation runs only while intersecting, visible, motion-allowed, and not user-paused. Reduced motion uses dynamically measured static geometry. Without JavaScript, the authored path remains on side-by-side desktop cards; stacked layouts hide the fixed-aspect overlay and keep the complete 45/220 metric cards and explanatory copy.
 
 ## Fallbacks

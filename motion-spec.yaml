@@ -35,7 +35,7 @@ scenes:
     viewBox: rendered-css-pixels
     path:
       id: hero-path
-      shape: full-bleed shallow entry hook into two-cubic valley
+      shape: full-bleed restrained shallow S with no entry hook
       starts: off-left
       selfIntersects: false
       crosses: measured pill center
@@ -88,7 +88,7 @@ scenes:
       - random-word-position
     mobile:
       strategy: same-connected-horizontal-composition
-      details: shallower valley, 13.5px text, 1.05x pill, 28px ribbon, clipped contiguous segments on both sides
+      details: shallower valley, 13.5px text, 1.15x pill, 28px ribbon, clipped contiguous segments on both sides
     reducedMotion:
       strategy: static-shared-path-diagram
       transport: stopped
@@ -105,12 +105,21 @@ scenes:
       selector: ".hero-avatar"
       format: original-inline-svg
       pose: right-facing-upper-body-profile
-      style: flat-editorial-heavy-outline
+      style: corporate-memphis-flat-editorial-thick-rounded-outline
+      palette: [lavender, mint, coral, warm-skin, butter, ink]
+      backdrop: single-flat-butter-pastel-organic-blob
+      gradients: false
+      textures: false
+      scale:
+        desktopMaxHeightPx: 210
+        mobileMaxHeightPx: 178
+        pillSeamStagePercent: 55
+        minStageTopClearancePx: 4
       motion:
         durationMs: 1700
         loop: true
         movingParts: [mouth-cavity, tongue, lower-lip]
-        staticParts: [head, eye, hair, neck, torso]
+        staticParts: [head, eye, hair, neck, torso, backdrop]
       userPause: freeze
       reducedMotion: mouth-closed
       lifecycle:
@@ -136,7 +145,11 @@ scenes:
       keyboardPxPerSecond: 28
       voicePxPerSecond: 108
       ramp: smooth from measured voice-card path entry across the next 12% of path progress
-      stackedDirection: keyboard leg left-to-right, connected voice return leg right-to-left
+      stackedDirection: soft S; keyboard left-to-right, contained right bend, voice return then right exit
+      stackedReturnExitSeparationPx: 118
+      stackedWordRotation: horizontal
+      stackedSteepConnectorFade: tangent-driven, labels fade nearly out on near-vertical bends
+      endpointFade: true
     lifecycle:
       suspendWhenOffscreen: true
       suspendWhenDocumentHidden: true

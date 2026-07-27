@@ -136,6 +136,23 @@ check("hero has one original inline-SVG right-facing editorial upper-body avatar
       and 'class="hero-avatar-head hero-avatar-ink"' in avatar_markup
       and 'class="hero-avatar-torso hero-avatar-ink"' in avatar_markup
       and "<img" not in avatar_markup)
+check("avatar is Corporate Memphis: pastel lavender/mint/coral/skin palette, no legacy character",
+      "#c7b9f2" in styles and "#a8e0c4" in styles
+      and "#f88f70" in styles and "#f0bd90" in styles
+      and "hero-avatar-halo" not in index and "hero-avatar-halo" not in styles
+      and "#7167dc" not in styles and "#1d4d3e" not in styles and "#f3ad68" not in styles
+      and "gradient" not in avatar_markup.lower()
+      and "url(" not in avatar_markup)
+check("one flat pastel organic backdrop blob sits behind the bust, unanimated",
+      avatar_markup.count('class="hero-avatar-backdrop"') == 1
+      and avatar_markup.index("hero-avatar-backdrop") < avatar_markup.index("hero-avatar-torso")
+      and ".hero-avatar-backdrop { fill: #f6dca2; }" in styles
+      and "hero-avatar-backdrop hero-avatar-ink" not in index
+      and ".hero-avatar-backdrop { animation" not in styles)
+check("avatar renders at the larger approved scale inside the taller stage",
+      "height: min(calc(55% - 14px), 210px);" in styles
+      and "height: min(calc(55% - 12px), 178px);" in styles
+      and "height: clamp(380px, 46vh, 480px);" in styles)
 check("only the avatar mouth components are animated",
       'class="hero-avatar-mouth-open"' in avatar_markup
       and 'class="hero-avatar-lower-lip"' in avatar_markup
@@ -233,10 +250,14 @@ check("pill bars and pulse share the text transport clock",
       and "bars[i].style.transform" in script
       and 'pill.style.setProperty("--hero-pulse"' in script
       and "renderWave(transportPx)" in script)
-check("JS rebuilds responsive full-bleed hook, valley, clips, and ribbon in CSS pixels",
+check("JS rebuilds one responsive no-hook shallow-S hero path, clips, and ribbon in CSS pixels",
       "buildFlowPath" in script
-      and "hookTopX" in script
-      and "hookEndX" in script
+      and "hookTopX" not in script
+      and "hookEndX" not in script
+      and "hookLift" not in script
+      and "var sway = Math.min" in script
+      and "centerY + sway" in script
+      and "centerY - sway" in script
       and 'setAttribute("viewBox"' in script
       and "clipInRect.setAttribute" in script
       and "clipOutRect.setAttribute" in script
@@ -259,7 +280,7 @@ check("forced-colors preserves output ribbon contrast",
 check("mobile keeps one connected through-pill composition",
       "var compact = width < 560;" in script
       and 'ribbon.setAttribute("stroke-width", compact ? "28" : "34")' in script
-      and ".hero-stage { height: clamp(230px, 64vw, 300px); }" in styles)
+      and ".hero-stage { height: clamp(280px, 88vw, 352px); }" in styles)
 
 # --- Expanded landing sections --------------------------------------------
 APP_SLUGS = [
@@ -332,6 +353,10 @@ check("speed comparison uses one responsive variable-velocity SVG word path",
       and "voiceBounds.y >= keyBounds.y + keyBounds.height - 1" in script
       and "getPointAtLength" in script
       and "ResizeObserver" in script
+      and "exitLegY - 118" in script
+      and "var rotation = stackedLayout ? 0 : angle;" in script
+      and "var slopeFade = stackedLayout ? 1 - 0.92 * smoothstep(38, 72, Math.abs(angle)) : 1;" in script
+      and "padding-bottom: 230px;" in styles
       and ".speed-ribbon" not in styles
       and 'class="speed-ribbon"' not in index
       and "html:not(.js) .speed-flow-stage { display: none; }" in styles)
