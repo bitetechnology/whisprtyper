@@ -8,91 +8,116 @@ reducedMotion:
 reducedTransparency:
   strategy: opaque-surface
 scenes:
-  - id: persistent-glass
-    range: [0.0, 1.0]
-    copy: Persistent product navigation and download CTA.
-    render:
-      mode: css
-      state: frosted-pill
-    acceptance:
-      - stable geometry at every scroll position
-      - all controls at least 44px high
-      - no horizontal overflow at 390px
-      - solid reduced-transparency and forced-colors fallbacks
-sequences:
-  - id: hero-wave-type
-    timeline: time-loop
-    durationMs: 9000
-    render:
-      mode: html-svg-js
-      paths: inline-svg-2d-wave-normalized-viewbox
-      positioning: raf-samples-getPointAtLength-into-css-custom-properties
-      materials: css-only
-      typeface: editorial-serif
-    states:
-      - name: listening
-        range: [0.0, 0.74]
-        pill: recording
-        copy: editorial sentence types out letter by letter along the 2D wave into the pill
-      - name: finalizing
-        range: [0.74, 0.84]
-        pill: finalizing
-        copy: pill swaps waveform for spinner; in-wave letters fade as docked sentence takes over
-      - name: inserted
-        range: [0.84, 0.96]
-        pill: inserted
-        copy: finalized punctuated sentence sits docked to the right of the pill
-      - name: reset
-        range: [0.96, 1.0]
-        pill: recording
-        copy: sentence fades out; loop restarts seamlessly
-    wave:
-      viewBox: [0, 0, 100, 100]
-      start: [6, 74]
-      end: [74, 52]
-      humps: 2
-      amplitudeDecay: 1.45
-      amplitudePx: 22
-      center: [50, 52]
-      dock: [82, 52]
+  - id: page
+    selector: body
+    background: "#F7F4ED"
+    overflowX: hidden
+  - id: hero-through-pill-flow
+    selector: "#hero-stage"
+    ariaHidden: true
+    overflow: hidden
+    viewBox: rendered-css-pixels
+    path:
+      id: hero-path
+      shape: shallow two-cubic valley
+      starts: off-left
+      crosses: measured pill center
+      ends: off-right
+      textDistortion: none
+    conveyor:
+      transcriptCopies: 2
+      renderedLayersPerCopy: 2
+      inputLayer:
+        clip: hero-clip-in
+        color: "rgba(76, 74, 70, 0.58)"
+      outputLayer:
+        clip: hero-clip-out
+        color: "#F7F7EB"
+      sharedPath: hero-path
+      sharedOffset: exact per copy pair
+      opacity: 1
+      speedPxPerSecond: 78
+      gapEm: 2.4
+      loop: modulo-two-pitches
+    ribbon:
+      selector: ".hero-ribbon"
+      path: hero-path
+      clip: hero-clip-out
+      stroke: "#111113"
+      strokeWidthDesktop: 34
+      strokeWidthMobile: 28
+      layer: beneath output text and pill
+    pill:
+      selector: ".hero-pill"
+      center: shared path crossing
+      background: "rgba(255, 254, 245, 0.96)"
+      border: "2px solid #111113"
+      layer: above input and output
+      waveform:
+        bars: 10
+        driver: same transportPx as text
+        cssKeyframes: disabled
+        scaleRange: [0.5, 1.12]
+      pulse:
+        driver: same transportPx as text
+        scaleRange: [1.0, 1.012]
+    forbiddenHeroStates:
+      - finalizing-spinner
+      - inserted-checkmark
+      - static-output-card
+      - per-word-opacity
+      - random-word-position
     mobile:
-      strategy: same-stage-simplified
-      details: taller relative curves, two letters hidden (data-i 0/2), 1.05x pill, compact ribbon lowered behind the pill inside the clipped stage, redundant dynamic status label hidden
+      strategy: same-connected-horizontal-composition
+      details: shallower valley, 13.5px text, 1.05x pill, 28px ribbon, clipped contiguous segments on both sides
     reducedMotion:
-      strategy: static-complete-diagram
-      state: full editorial sentence laid along the wave, static waveform pill, docked finalized sentence; no loop runs
-    noJs:
-      strategy: identical static diagram served in markup; nothing hidden until scripts run
-    scheduling:
-      - raf only while stage intersects viewport
-      - raf cancelled when document hidden
-      - runtime reduced-motion change tears down to static diagram
-    acceptance:
-      - incoming fragments read exactly "just finished / the draft / i can send / it over / after lunch"
-      - outgoing sentence reads exactly "Just finished the draft. I can send it over after lunch."
-      - pill states are limited to recording, finalizing, inserted
-      - the page never requests microphone access
-      - stage visuals are aria-hidden and non-interactive; relationship also stated in visible text
-      - no horizontal page overflow at 390px; stage clips internally
-      - no rewriting, grammar, summarization, cloud-AI, or live-dictation implication
+      strategy: static-shared-path-diagram
+      transport: stopped
+      waveform: static
+      pillPulse: stopped
+    lifecycle:
+      suspendWhenOffscreen: true
+      suspendWhenDocumentHidden: true
+      resizeObserver: true
+      maxFrameDeltaMs: 250
+    noAudioApis: true
+  - id: interactive-demo
+    selector: "#voice-demo"
+    interaction: pointer-keyboard-control
+    audioCapture: false
+    states:
+      - idle
+      - recording
+      - finalizing
+    finalizingDurationMs: 800
+sequences:
+  - id: hero-through-pill-text-ribbon
+    trigger: intersection
+    loop: continuous
+    speedPxPerSecond: 78
+    render: native-svg-textPath-shared-offsets
+    phases:
+      - name: flow
+        range: continuous
+        input: muted sentence moving toward pill
+        pill: deterministic waveform and subtle pulse
+        output: identical moving sentence on black ribbon
+    easing: linear-transport
+    accessibility:
+      reducedMotion: static through-pill diagram
+      noJs: authored static paired offsets
+      forcedColors: CanvasText ribbon with Canvas output text
+      contrast: input and tags on warm canvas; ivory output on black ribbon
+    performance:
+      compositorOnly: false
+      mainThreadWork: four startOffset writes plus ten bar transforms per frame
+      maxDpr: 2
   - id: supporting-decorative-motion
-    note: >
-      Honest inventory. The site has more than the navbar and hero loop. These
-      lighter decorative motions exist and respect prefers-reduced-motion:
-    items:
-      - id: scroll-reveal
-        trigger: section enters viewport (IntersectionObserver)
-        render: css keyframe reveal-in on non-hero content
-        note: content is never hidden; reduced-motion shows it static
-      - id: how-step-waveform
-        location: ".step-key-wave beside the Hold. Talk. Let go. step"
-        render: css keyframe pill-bar loop
-        note: decorative; implies no transcription
-      - id: demo-caret
-        location: "#product demo inserted state"
-        render: css keyframe caret-blink
-        note: shows during the user-triggered interactive preview only
+    render: css
+    sequences:
+      - id: interactive-demo-waveform
+        render: css keyframe pill-bar during user-triggered recording
       - id: interactive-demo-spinner
-        location: "#product demo finalizing state"
-        render: css keyframe pill-spin independent of hero is-animated
-        note: deliberate user-triggered preview, not ambient background motion
+        render: css keyframe pill-spin during user-triggered finalizing
+      - id: viewport-reveal
+        render: css keyframe reveal-in behind intersection observer

@@ -206,139 +206,172 @@
   }
 })();
 
-/* ---------- Hero typewriter-wave scene ----------
-   Decorative deterministic loop: an editorial sentence types out letter by
-   letter along a 2D wave (it rises and falls a couple of times, then flattens)
-   and the whole sentence lands in the dark-glass pill, which then finalizes and
-   docks the finished sentence to the right. Purely visual — it never requests
-   microphone access. The in-markup --x/--y letter positions are a complete
-   static diagram (the full sentence along the wave), so this module only
-   enhances; it runs requestAnimationFrame solely while the stage is on screen,
-   the page is visible, and reduced motion is not requested. */
+/* ---------- Hero continuous through-pill sentence ribbon ----------
+   One shared responsive SVG path runs from off-left, through the pill center,
+   to off-right. Two identical full-sentence copies form a seamless conveyor.
+   Each copy is rendered twice with the exact same startOffset: muted ink in
+   the input clip and ivory in the output clip above a black ribbon. The pill
+   covers the split, so the same glyphs visibly enter, pass through, and leave
+   on the other side. The hero bars are driven from the same transport clock;
+   there are no random word reveals, independent opacity changes, finalizing
+   state, static output card, microphone request, or audio API. */
 (function () {
   "use strict";
 
   var stage = document.getElementById("hero-stage");
   if (!stage) return;
 
+  var svg = stage.querySelector("svg.stage-curves");
   var pill = stage.querySelector(".hero-pill");
-  var label = stage.querySelector(".hero-stage-label");
-  var out = stage.querySelector(".hero-out");
-  var pathIn = document.getElementById("hero-path");
-  var letters = Array.prototype.slice.call(stage.querySelectorAll(".hero-letter"));
-  if (!pill || !label || !out || !pathIn || !letters.length) return;
-  if (typeof pathIn.getTotalLength !== "function") return;
+  var path = document.getElementById("hero-path");
+  var ribbon = stage.querySelector(".hero-ribbon");
+  var clipInRect = document.getElementById("hero-clip-in-rect");
+  var clipOutRect = document.getElementById("hero-clip-out-rect");
+  var inputCopies = Array.prototype.slice.call(stage.querySelectorAll(".hero-sentence-in"));
+  var outputCopies = Array.prototype.slice.call(stage.querySelectorAll(".hero-sentence-out"));
+  var inputPaths = inputCopies.map(function (copy) { return copy.querySelector("textPath"); });
+  var outputPaths = outputCopies.map(function (copy) { return copy.querySelector("textPath"); });
+  var bars = Array.prototype.slice.call(pill ? pill.querySelectorAll(".pill-wave i") : []);
+
+  if (!svg || !pill || !path || !ribbon || !clipInRect || !clipOutRect) return;
+  if (inputCopies.length !== 2 || outputCopies.length !== 2 || bars.length === 0) return;
+  if (inputPaths.concat(outputPaths).some(function (node) { return !node; })) return;
+  if (typeof path.getTotalLength !== "function") return;
 
   var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-  var CYCLE_MS = 9000;
-  /* Contiguous normalized phases; ranges mirror motion-spec.yaml. */
-  var PHASES = [
-    { until: 0.74, pill: "recording", text: "listening" },
-    { until: 0.84, pill: "finalizing", text: "finalizing" },
-    { until: 0.96, pill: "inserted", text: "inserted" },
-    { until: 1.01, pill: "recording", text: "listening" }
-  ];
-
-  var TYPE_START = 0.04;   /* when the first letter appears */
-  var TYPE_END = 0.62;     /* last letter typed by here */
-  var OUT_START = 0.74;    /* finalized sentence docks out */
-  var OUT_TRAVEL = 0.16;
-  var OUT_FADE = 0.96;
-
-  var lenIn = pathIn.getTotalLength();
-  var N = letters.length;
-
-  function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
-  function easeInOut(v) { return v * v * (3 - 2 * v); }
-
-  function placeLetter(letter, fraction, opacity) {
-    var point = pathIn.getPointAtLength(lenIn * clamp01(fraction));
-    letter.style.setProperty("--x", point.x.toFixed(2));
-    letter.style.setProperty("--y", point.y.toFixed(2));
-    letter.style.setProperty("--o", opacity.toFixed(3));
-  }
-
-  /* Per-letter static positions (from markup) so reduced-motion shows the
-     full sentence along the wave. */
-  var staticDefaults = letters.concat([out]).map(function (element) {
-    return { element: element, css: element.getAttribute("style") || "" };
+  var TRANSPORT_SPEED = 78; /* CSS px (SVG user units) per second */
+  var GAP_EM = 2.4;
+  var staticOffsets = inputPaths.map(function (node) {
+    return node.getAttribute("startOffset") || "0";
   });
-  var staticLabel = label.textContent;
-
-  var pillState = pill.getAttribute("data-state");
-  function setPill(state) {
-    if (state === pillState) return;
-    pillState = state;
-    pill.setAttribute("data-state", state);
-  }
-
-  var labelText = staticLabel;
-  function setLabel(text) {
-    if (text === labelText) return;
-    labelText = text;
-    label.textContent = text;
-  }
-
-  function render(t) {
-    var phase = PHASES[PHASES.length - 1];
-    for (var i = 0; i < PHASES.length; i++) {
-      if (t < PHASES[i].until) { phase = PHASES[i]; break; }
-    }
-    setPill(phase.pill);
-    setLabel(phase.text);
-
-    /* Typewriter: each letter turns on at its slice of [TYPE_START, TYPE_END],
-       rides the wave inward, and stays lit through finalizing/inserted. */
-    var typeU = clamp01((t - TYPE_START) / (TYPE_END - TYPE_START));
-    var typedCount = Math.floor(typeU * N + 1e-6);
-    for (var k = 0; k < N; k++) {
-      if (k < typedCount) {
-        /* letter already typed: sit at its wave position (fraction = (k+0.5)/N) */
-        var frac = (k + 0.5) / N;
-        placeLetter(letters[k], frac, 1);
-      } else {
-        letters[k].style.setProperty("--o", "0");
-      }
-    }
-
-    /* A blinking caret on the last lit letter while we are still typing. */
-    var caretIndex = (t >= TYPE_START && t < TYPE_END && typedCount > 0 && typedCount < N) ? (typedCount - 1) : -1;
-    for (var c = 0; c < N; c++) {
-      if (c === caretIndex) letters[c].classList.add("is-caret");
-      else letters[c].classList.remove("is-caret");
-    }
-
-    var e = clamp01((t - OUT_START) / OUT_TRAVEL);
-    var opacity = t < OUT_START ? 0 : clamp01(e / 0.25);
-    if (t >= OUT_FADE) opacity = clamp01((1 - t) / (1 - OUT_FADE));
-    /* Finalized sentence docks to the right of the pill (static --x:82;--y:52). */
-    out.style.setProperty("--o", opacity.toFixed(3));
-
-    /* Once the sentence has typed, fade the in-wave letters out as the docked
-       sentence takes over, so the wave clears before the next loop. */
-    if (t >= TYPE_END) {
-      var fade = clamp01((t - TYPE_END) / 0.12);
-      for (var j = 0; j < N; j++) {
-        letters[j].style.setProperty("--o", (1 - fade).toFixed(3));
-      }
-    }
-  }
-
   var rafId = null;
   var elapsed = 0;
   var lastTs = null;
+  var stageInView = false;
+  var resizeRaf = null;
+  var sentenceAdvance = 1;
+  var pitch = 1;
 
-  function frame(ts) {
-    if (lastTs !== null) elapsed += Math.min(ts - lastTs, 250);
-    lastTs = ts;
-    render((elapsed % CYCLE_MS) / CYCLE_MS);
+  function copyFontSize() {
+    var size = parseFloat(window.getComputedStyle(inputCopies[0]).fontSize);
+    return size > 0 ? size : 16;
+  }
+
+  function measureConveyor() {
+    var advance = 0;
+    if (typeof inputCopies[0].getComputedTextLength === "function") {
+      advance = inputCopies[0].getComputedTextLength();
+    }
+    if (!(advance > 0)) advance = inputCopies[0].textContent.length * copyFontSize() * 0.5;
+    sentenceAdvance = advance;
+    pitch = sentenceAdvance + copyFontSize() * GAP_EM;
+  }
+
+  /* A shallow two-cubic valley matches the reference: muted words descend
+     toward the pill, then the same path climbs away under the black ribbon.
+     Horizontal tangents at the center keep type calm as it crosses the pill. */
+  function buildFlowPath(width, height, centerX, centerY) {
+    var compact = width < 560;
+    var overshoot = Math.max(compact ? 26 : 64, width * 0.075);
+    var inputRise = Math.min(height * (compact ? 0.12 : 0.34), compact ? 36 : 112);
+    var outputRise = Math.min(height * (compact ? 0.15 : 0.3), compact ? 44 : 96);
+    var startY = Math.max(22, centerY - inputRise);
+    var endY = Math.max(22, centerY - outputRise);
+    var startX = -overshoot;
+    var endX = width + overshoot;
+    var leftC1 = width * (compact ? 0.08 : 0.1);
+    var leftC2 = centerX * (compact ? 0.68 : 0.62);
+    var rightC1 = centerX + (width - centerX) * (compact ? 0.32 : 0.38);
+    var rightC2 = width * (compact ? 0.92 : 0.88);
+
+    return "M " + startX.toFixed(2) + " " + startY.toFixed(2)
+      + " C " + leftC1.toFixed(2) + " " + startY.toFixed(2)
+      + " " + leftC2.toFixed(2) + " " + centerY.toFixed(2)
+      + " " + centerX.toFixed(2) + " " + centerY.toFixed(2)
+      + " C " + rightC1.toFixed(2) + " " + centerY.toFixed(2)
+      + " " + rightC2.toFixed(2) + " " + endY.toFixed(2)
+      + " " + endX.toFixed(2) + " " + endY.toFixed(2);
+  }
+
+  /* Match the SVG coordinate space to rendered CSS pixels, split both color
+     layers at the measured pill center, and keep the black ribbon on the exact
+     output half of the shared path. */
+  function rebuildGeometry() {
+    var stageRect = stage.getBoundingClientRect();
+    var pillRect = pill.getBoundingClientRect();
+    if (!stageRect.width || !stageRect.height || !pillRect.width) return;
+
+    var centerX = pillRect.left - stageRect.left + pillRect.width / 2;
+    var centerY = pillRect.top - stageRect.top + pillRect.height / 2;
+    var compact = stageRect.width < 560;
+    var overshoot = Math.max(compact ? 26 : 64, stageRect.width * 0.075);
+    var clipPad = overshoot * 3;
+
+    svg.setAttribute("viewBox", "0 0 " + stageRect.width.toFixed(2) + " " + stageRect.height.toFixed(2));
+    path.setAttribute("d", buildFlowPath(stageRect.width, stageRect.height, centerX, centerY));
+    ribbon.setAttribute("stroke-width", compact ? "28" : "34");
+    ribbon.setAttribute("transform", compact ? "translate(0 -4)" : "translate(0 -5)");
+
+    clipInRect.setAttribute("x", (-clipPad).toFixed(2));
+    clipInRect.setAttribute("y", (-stageRect.height).toFixed(2));
+    clipInRect.setAttribute("width", (centerX + clipPad).toFixed(2));
+    clipInRect.setAttribute("height", (stageRect.height * 3).toFixed(2));
+    clipOutRect.setAttribute("x", centerX.toFixed(2));
+    clipOutRect.setAttribute("y", (-stageRect.height).toFixed(2));
+    clipOutRect.setAttribute("width", (stageRect.width - centerX + clipPad).toFixed(2));
+    clipOutRect.setAttribute("height", (stageRect.height * 3).toFixed(2));
+
+    measureConveyor();
+  }
+
+  function setPairOffset(index, value) {
+    var offset = value.toFixed(2);
+    inputPaths[index].setAttribute("startOffset", offset);
+    outputPaths[index].setAttribute("startOffset", offset);
+  }
+
+  /* The waveform is not a separate decorative loop: every bar and the subtle
+     pill pulse are deterministic functions of the same transport position as
+     the sentence copies. */
+  function renderWave(transportPx) {
+    var phase = transportPx * 0.055;
+    for (var i = 0; i < bars.length; i++) {
+      var carrier = Math.sin(phase + i * 0.73);
+      var overtone = Math.sin(phase * 0.57 - i * 1.09);
+      var energy = Math.abs(carrier * 0.72 + overtone * 0.28);
+      bars[i].style.transform = "scaleY(" + (0.5 + energy * 0.62).toFixed(3) + ")";
+    }
+    var pulse = 1 + (0.5 + 0.5 * Math.sin(phase * 0.82)) * 0.012;
+    pill.style.setProperty("--hero-pulse", pulse.toFixed(4));
+  }
+
+  function render(transportPx) {
+    var cycle = pitch * 2;
+    var base = ((transportPx % cycle) + cycle) % cycle;
+    for (var i = 0; i < 2; i++) {
+      var pos = (base + i * pitch) % cycle;
+      if (pos >= pitch) pos -= cycle;
+      setPairOffset(i, pos);
+    }
+    renderWave(transportPx);
+  }
+
+  function renderNow() {
+    render((elapsed / 1000) * TRANSPORT_SPEED);
+  }
+
+  function frame(timestamp) {
+    if (lastTs !== null) elapsed += Math.min(timestamp - lastTs, 250);
+    lastTs = timestamp;
+    renderNow();
     rafId = window.requestAnimationFrame(frame);
   }
 
   function start() {
     if (rafId !== null) return;
     stage.classList.add("is-animated");
+    rebuildGeometry();
+    renderNow();
     lastTs = null;
     rafId = window.requestAnimationFrame(frame);
   }
@@ -350,20 +383,19 @@
     stage.classList.remove("is-animated");
   }
 
-  /* Reduced motion: back to the complete static diagram, no loop at all. */
   function restoreStatic() {
     stop();
     elapsed = 0;
-    stage.classList.remove("is-animated");
-    staticDefaults.forEach(function (item) {
-      if (item.css) item.element.setAttribute("style", item.css);
-      else item.element.removeAttribute("style");
+    rebuildGeometry();
+    staticOffsets.forEach(function (offset, index) {
+      inputPaths[index].setAttribute("startOffset", offset);
+      outputPaths[index].setAttribute("startOffset", offset);
     });
-    setPill("recording");
-    setLabel(staticLabel);
+    bars.forEach(function (bar) { bar.style.transform = ""; });
+    pill.style.setProperty("--hero-pulse", "1");
+    pill.setAttribute("data-state", "recording");
   }
 
-  var stageInView = false;
   function sync() {
     if (reducedMotion.matches) {
       restoreStatic();
@@ -373,16 +405,25 @@
     else stop();
   }
 
+  function queueGeometryRefresh() {
+    if (resizeRaf !== null) window.cancelAnimationFrame(resizeRaf);
+    resizeRaf = window.requestAnimationFrame(function () {
+      resizeRaf = null;
+      rebuildGeometry();
+    });
+  }
+
+  if ("ResizeObserver" in window) {
+    new ResizeObserver(queueGeometryRefresh).observe(stage);
+  } else {
+    window.addEventListener("resize", queueGeometryRefresh, { passive: true });
+  }
+
   if ("IntersectionObserver" in window) {
-    var stageObserver = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (entry) {
-          stageInView = entry.isIntersecting;
-        });
-        sync();
-      },
-      { threshold: 0.1 }
-    );
+    var stageObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) { stageInView = entry.isIntersecting; });
+      sync();
+    }, { threshold: 0.1 });
     stageObserver.observe(stage);
   } else {
     stageInView = true;
@@ -394,5 +435,9 @@
     reducedMotion.addEventListener("change", sync);
   } else if (typeof reducedMotion.addListener === "function") {
     reducedMotion.addListener(sync);
+  }
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(queueGeometryRefresh);
   }
 })();

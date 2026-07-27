@@ -339,12 +339,20 @@ main > .cta-strip { margin-top: clamp(28px, 4vw, 44px); }
   margin: 0;
 }
 
-/* ---------- Hero word-flow stage ----------
-   Spoken lower-case fragments travel a curved incoming path into a strong
-   dark glass pill; the finalized sentence exits along a mirrored outgoing
-   path. Positions are viewBox percentages (0–100) written to --x/--y; the
-   inline defaults in index.html form a complete static diagram, so the
-   scene reads fully without JavaScript or with reduced motion. */
+/* ---------- Hero continuous flow-through conveyor ----------
+   One shared valley path runs off-left, through the pill center, and
+   off-right. The complete editorial sentence rides it as one continuous
+   train: two identical full-sentence textPath copies, spaced one pitch apart
+   and moved by a single shared transport, are rendered twice — once clipped
+   to the input half in muted ink, once clipped to the output half in ivory
+   on a thick dark ribbon (a stroked <use> of the same path). Because both
+   layers reference the same path and receive the same numeric startOffset
+   every frame, the words that enter the pill are spatially the exact words
+   that leave it; the pill sits above both layers and hides the color seam.
+   JS rebuilds the viewBox, valley, ribbon, and clip split in CSS pixels per
+   viewport, so type is never stretched. The authored offsets (one copy at
+   the path start, one parked off-path) form the no-JS/reduced-motion
+   diagram. */
 
 .hero-flow {
   margin: clamp(30px, 5vh, 54px) 0 0;
@@ -363,117 +371,63 @@ main > .cta-strip { margin-top: clamp(28px, 4vw, 44px); }
 .stage-curves {
   position: absolute;
   inset: 0;
+  z-index: 1;
   width: 100%;
   height: 100%;
+  overflow: visible;
 }
-.stage-curves path {
+/* Output-only ribbon: a thick dark stroke of the exact shared flow path,
+   clipped to the output half so it starts underneath the pill and carries
+   the ivory outgoing words. */
+.hero-ribbon {
   fill: none;
-  stroke: rgba(29, 29, 31, 0.26);
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-dasharray: 0.001 2.4;
-  vector-effect: non-scaling-stroke;
+  stroke: #111113;
+  stroke-linecap: butt;
+  stroke-linejoin: round;
 }
 
-.hero-letter {
-  position: absolute;
-  left: calc(var(--x) * 1%);
-  top: calc(var(--y) * 1%);
-  transform: translate(-50%, -50%);
-  opacity: var(--o, 1);
-  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Times New Roman", serif;
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: 0.005em;
-  color: var(--ink);
-  white-space: nowrap;
+/* The travelling sentence is always fully opaque; the only clipping is the
+   path's own ends plus the input/output split hidden under the pill. Never
+   animate its opacity. */
+.hero-sentence-copy {
+  opacity: 1;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   pointer-events: none;
 }
+.hero-sentence-in { fill: rgba(76, 74, 70, 0.58); }
+.hero-sentence-out { fill: var(--ivory); }
 
-/* Blinking caret on the last lit letter while typing. */
-.hero-letter.is-caret::after {
-  content: "";
-  display: inline-block;
-  width: 1px;
-  height: 1.05em;
-  margin-left: 1px;
-  vertical-align: -0.15em;
-  background: currentColor;
-  opacity: 0.85;
-}
-@keyframes hero-caret { 0%, 49% { opacity: 0.85; } 50%, 100% { opacity: 0; } }
-@media (prefers-reduced-motion: no-preference) {
-  .hero-stage.is-animated .hero-letter.is-caret::after { animation: hero-caret 0.7s steps(1) infinite; }
-}
-
-.hero-out {
-  position: absolute;
-  z-index: 1;
-  left: calc(var(--x) * 1%);
-  top: calc(var(--y) * 1%);
-  transform: translate(-55%, -50%);
-  opacity: var(--o, 1);
-  width: min(420px, 46%);
-  background: linear-gradient(to bottom, #333336, #1a1a1c);
-  color: var(--ivory);
-  border-radius: 18px;
-  padding: 10px 18px;
-  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Times New Roman", serif;
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 1.45;
-  text-wrap: pretty;
-  box-shadow: 0 14px 34px rgba(29, 24, 16, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.14);
-}
-
-/* Strong dark glass over the stage; the faint dotted paths blur beneath it. */
+/* Warm outlined processing pill above both sentence layers. */
 .voice-pill.hero-pill {
   --s: 1.35;
+  --hero-pulse: 1;
   position: absolute;
   z-index: 2;
   left: 50%;
   top: 52%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(var(--hero-pulse));
   margin-top: 0;
   cursor: default;
   touch-action: auto;
-  background: linear-gradient(to bottom, rgba(46, 44, 40, 0.9), rgba(22, 21, 19, 0.94));
-  -webkit-backdrop-filter: blur(14px) saturate(1.3);
-  backdrop-filter: blur(14px) saturate(1.3);
-  box-shadow: 0 20px 44px rgba(29, 24, 16, 0.35), 0 2px 8px rgba(29, 24, 16, 0.18);
+  border: 2px solid #111113;
+  background: rgba(255, 254, 245, 0.96);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  backdrop-filter: blur(14px) saturate(1.15);
+  box-shadow: 0 16px 38px rgba(29, 24, 16, 0.18), 0 2px 7px rgba(29, 24, 16, 0.12);
+  transform-origin: center;
 }
-.hero-pill .pill-spinner {
-  width: calc(16px * var(--s));
-  height: calc(16px * var(--s));
+.voice-pill.hero-pill .pill-wave i {
+  background: #111113;
+  transform-origin: center;
 }
-/* Static waveform unless the JS loop is actually running. */
+/* Hero bars never use the shared CSS keyframes: while the JS loop runs they
+   are scaled deterministically from the same transport clock that moves the
+   sentence, and offscreen / reduced-motion / no-JS they hold their static
+   heights. */
 .voice-pill.hero-pill[data-state="recording"] .pill-wave i { animation: none; }
-/* The hero finalizing spinner only animates while the JS loop is on screen. */
-.voice-pill.hero-pill[data-state="finalizing"] .pill-spinner { animation: none; }
-@media (prefers-reduced-motion: no-preference) {
-  .hero-stage.is-animated .hero-pill[data-state="recording"] .pill-wave i {
-    animation: pill-bar 1.35s ease-in-out infinite alternate;
-  }
-  .hero-stage.is-animated .voice-pill.hero-pill[data-state="finalizing"] .pill-spinner {
-    animation: pill-spin 1s linear infinite;
-  }
-}
-@keyframes pill-spin { to { transform: rotate(360deg); } }
-
-.pill-check {
-  display: none;
-  width: calc(17px * var(--s, 1));
-  height: calc(17px * var(--s, 1));
-}
-.pill-check path {
-  fill: none;
-  stroke: var(--ivory);
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.voice-pill[data-state="inserted"] .pill-wave { display: none; }
-.voice-pill[data-state="inserted"] .pill-check { display: block; }
 
 .hero-stage-label {
   position: absolute;
@@ -488,8 +442,6 @@ main > .cta-strip { margin-top: clamp(28px, 4vw, 44px); }
   color: var(--ink-soft);
   white-space: nowrap;
 }
-.voice-pill.hero-pill[data-state="inserted"] ~ .hero-stage-label { opacity: 0; }
-
 .hero-stage-tag {
   position: absolute;
   bottom: 7%;
@@ -702,9 +654,6 @@ main > .cta-strip { margin-top: clamp(28px, 4vw, 44px); }
 .voice-pill[data-state="finalizing"] .pill-wave { display: none; }
 .voice-pill[data-state="finalizing"] .pill-spinner { display: block; }
 
-/* The hero spinner only animates while the JS loop is actually running; the
-   interactive #product demo spinner keeps spinning under finalizing on its own. */
-.voice-pill.hero-pill[data-state="finalizing"] .pill-spinner { animation: none; }
 @media (prefers-reduced-motion: no-preference) {
   .voice-pill[data-state="recording"] .pill-wave i { animation: pill-bar 1.35s ease-in-out infinite alternate; }
   .voice-pill[data-state="recording"] .pill-wave i:nth-child(1)  { animation-delay: -0.15s; animation-duration: 1.2s; }
@@ -717,8 +666,7 @@ main > .cta-strip { margin-top: clamp(28px, 4vw, 44px); }
   .voice-pill[data-state="recording"] .pill-wave i:nth-child(8)  { animation-delay: -0.78s; }
   .voice-pill[data-state="recording"] .pill-wave i:nth-child(9)  { animation-delay: -0.55s; animation-duration: 1.3s; }
   .voice-pill[data-state="recording"] .pill-wave i:nth-child(10) { animation-delay: -0.08s; }
-  .hero-stage.is-animated .voice-pill.hero-pill[data-state="finalizing"] .pill-spinner { animation: pill-spin 0.8s linear infinite; }
-  .voice-pill:not(.hero-pill)[data-state="finalizing"] .pill-spinner { animation: pill-spin 0.8s linear infinite; }
+  .voice-pill[data-state="finalizing"] .pill-spinner { animation: pill-spin 0.8s linear infinite; }
 }
 @keyframes pill-bar {
   from { transform: scaleY(1); }
@@ -1423,19 +1371,17 @@ main > .cta-strip { margin-top: clamp(28px, 4vw, 44px); }
   .channel-grid { grid-template-columns: 1fr; }
   .cta-strip { justify-content: center; text-align: center; }
 
-  /* Simplified hero stage: taller curves, fewer fragments, smaller pill,
-     ribbon pulled left so it stays inside the clipped stage. */
-  .hero-stage { height: clamp(280px, 82vw, 340px); }
-  .hero-letter { font-size: 12.5px; }
-  .hero-letter[data-i="0"],
-  .hero-letter[data-i="2"] { display: none; }
+  /* On phones the same single flow-through composition simply gets shorter,
+     with a gentler valley (JS caps the rise) and smaller type. Each side
+     shows a shorter contiguous sentence segment, but both sides stay visibly
+     connected through the pill; nothing stacks under it. JS rebuilds the SVG
+     viewBox to this rendered pixel size, so text is never stretched. */
+  .hero-stage { height: clamp(230px, 64vw, 300px); }
+  .hero-sentence-copy { font-size: 13.5px; }
+  /* Without JS the authored 1000x380 diagram letterboxes down on phones, so
+     the static sentence segment uses a larger em size to stay legible. */
+  html:not(.js) .hero-sentence-copy { font-size: 30px; }
   .voice-pill.hero-pill { --s: 1.05; }
-  .hero-out {
-    width: min(190px, 52%);
-    transform: translate(-60%, -18%);
-    font-size: 13px;
-    padding: 8px 14px;
-  }
   .hero-stage-label { display: none; }
 }
 
@@ -1459,7 +1405,7 @@ main > .cta-strip { margin-top: clamp(28px, 4vw, 44px); }
   }
   .nav::before { opacity: 0.28; }
   .hero-pill {
-    background: #1f1e1b;
+    background: #fffef5;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
@@ -1484,15 +1430,11 @@ main > .cta-strip { margin-top: clamp(28px, 4vw, 44px); }
   }
   .hero-stage { background: none; }
   .stage-curves path { stroke: CanvasText; }
-  .hero-letter,
+  .hero-sentence-copy,
   .hero-stage-label,
-  .hero-stage-tag { color: CanvasText; }
-  .hero-out {
-    background: Canvas;
-    color: CanvasText;
-    border: 1px solid CanvasText;
-    box-shadow: none;
-  }
+  .hero-stage-tag { fill: CanvasText; color: CanvasText; }
+  .hero-ribbon { stroke: CanvasText; }
+  .hero-sentence-out { fill: Canvas; }
   .hero-pill {
     background: Canvas;
     border: 1px solid CanvasText;

@@ -35,20 +35,25 @@ components:
     textColor: "#F7F4ED"
     rounded: "{rounded.pill}"
     minControlHeight: 44px
-  hero-strong-pill:
-    backgroundColor: "rgba(22, 21, 19, 0.94)"
-    textColor: "#F7F7EB"
+  hero-processing-pill:
+    backgroundColor: "rgba(255, 254, 245, 0.96)"
+    borderColor: "#111113"
+    waveformColor: "#111113"
     rounded: "{rounded.pill}"
     blur: 14px
     scale: 1.35
-  hero-word-fragment:
-    textColor: "#4C4A46"
-    fontSize: 15px
-  hero-finalized-ribbon:
-    backgroundColor: "#1A1A1C"
+  hero-sentence-input:
+    textColor: "rgba(76, 74, 70, 0.58)"
+    fontFamily: "-apple-system, BlinkMacSystemFont, SF Pro Text, Segoe UI, sans-serif"
+    fontSize: 16px
+    fontWeight: 700
+    opacity: 1
+  hero-output-ribbon:
+    strokeColor: "#111113"
     textColor: "#F7F7EB"
-    rounded: 18px
-    fontSize: 15px
+    strokeWidth: 34px
+    fontSize: 16px
+    fontWeight: 700
 ---
 
 # WhisprTyper Design Contract
@@ -64,7 +69,7 @@ components:
 ## Liquid Glass hierarchy
 
 - **Standard:** the persistent navbar capsule. It uses a translucent warm fill, 24px blur, restrained saturation, luminous hairline edge, inner top/left highlight, and ambient shadow.
-- **Strong:** the hero word-flow capsule (dark, near-opaque, 14px blur), plus dense copy and transactional content, which remain opaque or strongly frosted. The page itself never becomes glass.
+- **Strong:** the black output ribbon and dense transactional content. The processing pill itself stays warm and outlined so the input/output color transformation is immediately legible. The page itself never becomes glass.
 - **Subtle:** decorative badges and compact overlays only.
 - The full viewport header must remain transparent; the glass boundary belongs to the capsule itself.
 
@@ -72,11 +77,11 @@ components:
 
 - Desktop hero is near-full-viewport (`min-height: 100svh` minus the sticky nav allowance) but content-height safe: min-height only, flex-centered, never fixed height, and never behind the navbar.
 - Headline scales to `clamp(44px, 8.2vw, 94px)`; eyebrow, subcopy, CTA pair, exact download URL, and the platform note are unchanged.
-- Below the note sits a clipped motion stage (`overflow: hidden`, 28px radius, `clamp(280px, 36vh, 400px)` tall on desktop) with two faint dotted cubic-Bézier guide paths in a normalized 0–100 viewBox: incoming `M 2 72 C 22 72 32 52 50 52`, outgoing `M 50 52 C 68 52 78 72 98 72`.
-- The stage narrative is product truth only: lower-case spoken fragments (“just finished … after lunch”) travel the incoming curve into the pill; the finalized punctuated sentence (“Just finished the draft. I can send it over after lunch.”) exits the outgoing curve. It shows transcription finalization and insertion — never rewriting, grammar correction, summarization, cloud AI, or live website dictation.
-- The hero capsule is the **strong/dark glass** tier (`hero-strong-pill`): near-opaque dark fill, 14px blur over the dotted paths beneath it, top-lit 1px rim, ambient shadow, at 1.35× the app pill geometry. The page canvas itself stays warm paper — the glass boundary belongs to the capsule, not the section.
-- Stage visuals are `aria-hidden` and non-interactive; the product relationship is stated in a visible figcaption and the small "You say" / "WhisprTyper types" tags (12px minimum). Hero fragment, tag, label, and caption text uses `--ink-soft` (#4C4A46) for at least WCAG AA contrast on the paper canvas.
-- At 390px the stage keeps the left-fragments → centered pill → right-sentence layout with fewer fragments, a 1.05× pill, and a widened ribbon lowered behind the pill inside the clip; the redundant dynamic status label is omitted and there is no horizontal page overflow.
+- Below the note sits a clipped motion stage (`overflow: hidden`, 28px radius, `clamp(280px, 36vh, 400px)` tall on desktop). One responsive SVG path forms a shallow valley from off-left, through the measured pill center, to off-right; the runtime viewBox matches rendered CSS pixels so glyphs are never stretched.
+- Two identical transcript copies form one continuous conveyor. Each copy is rendered twice on that exact path with identical numeric offsets: muted gray in the input clip, and ivory in the output clip over a 34px black path stroke. The pill masks the clip boundary, so the same words visibly enter and leave it without appearing, fading, or changing order independently.
+- The processing pill is warm, outlined `#111113`, and lightly frosted. Its ten dark waveform bars and restrained 1.2% pulse are deterministic functions of the same transport position that moves the sentence—not an unrelated CSS loop.
+- Stage visuals are `aria-hidden` and non-interactive; the product relationship is stated in a visible figcaption and the small "You say" / "WhisprTyper types" tags (12px minimum). Tag, label, and caption text uses `--ink-soft` (#4C4A46) for at least WCAG AA contrast on the paper canvas.
+- At 390px the same connected through-pill composition remains horizontal. The curve rises less, the ribbon narrows to 28px, and each side shows a shorter contiguous sentence segment without stacking a card below the pill or causing page overflow.
 
 ## Navbar geometry
 
@@ -87,10 +92,10 @@ components:
 
 ## Fallbacks
 
-- `prefers-reduced-transparency`: use an opaque warm surface and remove backdrop filtering; the hero pill becomes solid `#1F1E1B`.
-- `forced-colors`: use system Canvas/CanvasText and a visible solid border; hero curves, fragments, pill, and ribbon all redraw in CanvasText on Canvas.
-- `prefers-reduced-motion`: the hero stage renders its complete static diagram (fragments on the curve, waveform pill, docked finalized sentence); no loop runs.
-- No JavaScript: the same static diagram is served in markup; nothing in the hero is hidden until scripts load.
+- `prefers-reduced-transparency`: use opaque warm surfaces and remove backdrop filtering; the hero pill becomes solid `#FFFEF5` while the output ribbon stays black.
+- `forced-colors`: use system Canvas/CanvasText; the output ribbon becomes CanvasText and its moving words become Canvas for guaranteed inversion.
+- `prefers-reduced-motion`: the same shared-path diagram remains visible with paired input/output sentence segments and a static waveform; no transport or pulse runs.
+- No JavaScript: authored offsets show the same static through-pill diagram directly from markup.
 - Print: make the header static and opaque.
 
 ## Visual restraint

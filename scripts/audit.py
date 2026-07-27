@@ -69,42 +69,112 @@ check(
     f"found {len(intel_hits)} occurrence(s)",
 )
 
-# --- Hero word-flow scene -------------------------------------------------
+# --- Hero continuous through-pill scene -----------------------------------
 check("hero stage exists", 'id="hero-stage"' in index and 'aria-hidden="true"' in index)
-check("hero spiral path exists", 'id="hero-path"' in index)
-check("hero pills uses single spiral path (no legacy in/out paths)",
-      'id="hero-path-in"' not in index and 'id="hero-path-out"' not in index)
-check("hero pill exists with default recording state",
+check("hero shared flow path exists", 'id="hero-path"' in index)
+check("hero input/output clips exist",
+      'id="hero-clip-in"' in index and 'id="hero-clip-out"' in index)
+check("black output ribbon reuses the shared path",
+      'class="hero-ribbon" href="#hero-path"' in index)
+check("hero pill exists with waveform state",
       re.search(r'class="voice-pill hero-pill" data-state="recording"', index) is not None)
-check("hero letters present (typewriter model)", index.count('class="hero-letter"') >= 50)
-check("hero letter J present", 'data-i="0"' in index and ">J</span>" in index)
-check(
-    "finalized sentence exact",
-    "Just finished the draft. I can send it over after lunch.</span>" in index,
+TRANSCRIPT = (
+    "I think the new timeline should be ready by Friday, although it might "
+    "slip a little, so can you check in with the team and see if the notes "
+    "from yesterday's meeting were sent out, or if they are still waiting."
 )
-check("hero flow explained in text", 'class="scene-caption"' in index and "finalizes" in index)
-check("hero stage styles exist", ".hero-stage" in styles and ".hero-out" in styles)
+
+hero_svg_match = re.search(r'<svg class="stage-curves".*?</svg>', index, re.S)
+check("hero SVG stage block present", hero_svg_match is not None)
+hero_svg = hero_svg_match.group(0) if hero_svg_match else ""
+
+copy_nodes = re.findall(
+    r'<text class="hero-sentence-copy hero-sentence-(in|out)">\s*'
+    r'<textPath href="#hero-path" startOffset="([^"]+)">([^<]+)</textPath>\s*</text>',
+    hero_svg,
+)
+check("four rendered sentence layers exist", len(copy_nodes) == 4, f"found {len(copy_nodes)}")
+check("two input and two output copies exist",
+      [kind for kind, _, _ in copy_nodes].count("in") == 2
+      and [kind for kind, _, _ in copy_nodes].count("out") == 2)
+check("exactly four native textPath nodes use the shared path",
+      hero_svg.count('<textPath href="#hero-path"') == 4)
+check("every rendered copy contains the exact transcript",
+      len(copy_nodes) == 4 and all(text == TRANSCRIPT for _, _, text in copy_nodes))
+input_offsets = [offset for kind, offset, _ in copy_nodes if kind == "in"]
+output_offsets = [offset for kind, offset, _ in copy_nodes if kind == "out"]
+check("authored input and output offsets are paired numeric units",
+      input_offsets == output_offsets
+      and len(input_offsets) == 2
+      and all(re.fullmatch(r"-?\d+(\.\d+)?", value) for value in input_offsets),
+      f"input={input_offsets}, output={output_offsets}")
+check("no rectangular static hero output remains",
+      'class="hero-out"' not in index and ".hero-out" not in styles)
+check("hero flow explained in visible text",
+      'class="hero-stage-caption"' in index and "same sentence" in index)
+check("hero stage/ribbon styles exist", ".hero-stage" in styles and ".hero-ribbon" in styles)
 check("hero module exists in script.js", 'getElementById("hero-stage")' in script)
 
-# --- Hero offscreen / contrast invariants (from independent review) --------
-check(
-    "hero spinner gated behind is-animated (stops offscreen)",
-    ".hero-stage.is-animated .voice-pill.hero-pill[data-state=\"finalizing\"] .pill-spinner" in styles,
-)
-check(
-    "hero spinner disabled by default (no perpetual offscreen spin)",
-    ".voice-pill.hero-pill[data-state=\"finalizing\"] .pill-spinner { animation: none;" in styles,
-)
-check(
-    "interactive demo spinner still independent of hero is-animated",
-    ".voice-pill:not(.hero-pill)[data-state=\"finalizing\"] .pill-spinner" in styles,
-)
-check(
-    "hero fragment/tag/label/caption use AA token --ink-soft",
-    ".hero-letter {\n  position: absolute;" in styles
-    and "color: var(--ink-soft);" in styles
-    and ".hero-stage-caption {" in styles,
-)
+hero_script = script.split("/* ---------- Hero continuous through-pill sentence ribbon ----------", 1)[-1]
+check("hero waveform CSS keyframes are disabled",
+      '.voice-pill.hero-pill[data-state="recording"] .pill-wave i { animation: none; }' in styles)
+check("interactive demo spinner remains independent",
+      '.voice-pill[data-state="finalizing"] .pill-spinner' in styles)
+check("input and output text use deliberate contrasting fills",
+      ".hero-sentence-in { fill: rgba(76, 74, 70, 0.58); }" in styles
+      and ".hero-sentence-out { fill: var(--ivory); }" in styles)
+
+# --- Shared-conveyor implementation invariants ----------------------------
+check("JS pairs every input offset with the matching output offset",
+      'querySelectorAll(".hero-sentence-in")' in script
+      and 'querySelectorAll(".hero-sentence-out")' in script
+      and "setPairOffset" in script
+      and 'inputPaths[index].setAttribute("startOffset", offset)' in script
+      and 'outputPaths[index].setAttribute("startOffset", offset)' in script)
+check("JS measures one pitch and applies shared modulo transport",
+      "getComputedTextLength" in script
+      and "pitch = sentenceAdvance" in script
+      and "transportPx % cycle" in script
+      and "i * pitch" in script)
+check("sentence layers remain bold and fully opaque",
+      ".hero-sentence-copy {" in styles
+      and "opacity: 1;" in styles
+      and "font-weight: 700;" in styles
+      and ".style.opacity" not in hero_script)
+check("output is a black curved ribbon under ivory moving text",
+      ".hero-ribbon {" in styles
+      and "stroke: #111113;" in styles
+      and ".hero-sentence-out { fill: var(--ivory); }" in styles
+      and 'clip-path="url(#hero-clip-out)"' in index)
+check("pill is light, outlined, and layered over the shared seam",
+      ".voice-pill.hero-pill {" in styles
+      and "border: 2px solid #111113;" in styles
+      and "background: rgba(255, 254, 245, 0.96);" in styles
+      and "z-index: 2;" in styles)
+check("pill bars and pulse share the text transport clock",
+      "function renderWave(transportPx)" in script
+      and "bars[i].style.transform" in script
+      and 'pill.style.setProperty("--hero-pulse"' in script
+      and "renderWave(transportPx)" in script)
+check("JS rebuilds responsive valley, clips, and ribbon in CSS pixels",
+      "buildFlowPath" in script
+      and 'setAttribute("viewBox"' in script
+      and "clipInRect.setAttribute" in script
+      and "clipOutRect.setAttribute" in script
+      and 'ribbon.setAttribute("stroke-width"' in script
+      and "ResizeObserver" in script)
+check("hero has no phase machine, checkmark, or static output reveal",
+      all(token not in hero_script for token in ["var PHASES", "function setOutReveal", "setPill(", "out.style.clipPath"]))
+legacy_tokens = ["hero-letter", "hero-word", "wordStarts", 'data-i="']
+check("no legacy per-word/per-letter implementation remains",
+      all(token not in index and token not in hero_script and token not in styles for token in legacy_tokens))
+check("forced-colors preserves output ribbon contrast",
+      ".hero-ribbon { stroke: CanvasText; }" in styles
+      and ".hero-sentence-out { fill: Canvas; }" in styles)
+check("mobile keeps one connected through-pill composition",
+      "var compact = width < 560;" in script
+      and 'ribbon.setAttribute("stroke-width", compact ? "28" : "34")' in script
+      and ".hero-stage { height: clamp(230px, 64vw, 300px); }" in styles)
 
 # --- Forbidden claims and APIs -------------------------------------------
 FORBIDDEN = [
