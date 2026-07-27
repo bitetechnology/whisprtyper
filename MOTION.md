@@ -2,7 +2,9 @@
 
 ## Purpose
 
-The hero is one continuous processing diagram: spoken words descend toward WhisprTyper, pass through an animated processing pill, and continue as the exact same moving sentence in ivory type on a black ribbon.
+The first view is intentionally minimal: **“Type faster with your voice.”**, one **Download for Mac** CTA, and one continuous processing diagram. Spoken words descend toward WhisprTyper, pass through an animated processing pill, and continue as the exact same moving sentence in ivory type on a black ribbon.
+
+No eyebrow, explanatory paragraph, secondary CTA, compatibility note, animation label, side tag, or caption appears in the hero. The title communicates the product; the animation demonstrates it.
 
 ## Story
 
@@ -43,7 +45,7 @@ This is not a before/after card transition. Input and output are two color treat
 - SVG viewBox equals the rendered stage in CSS pixels; glyphs are never non-uniformly scaled.
 - Clip rectangles and ribbon width are rebuilt after resize.
 - Desktop ribbon: `34px`; mobile ribbon: `28px`.
-- At 390px the valley is shallower and both sides show shorter contiguous sentence segments while remaining visibly connected through the pill.
+- At 390px the hero occupies the viewport below the two-row nav and keeps the next section below the fold. The stage sits at the bottom of that space; the valley is shallower and both sides show shorter contiguous sentence segments while remaining visibly connected through the pill.
 - The stage clips internally and must not create page-level horizontal overflow.
 
 ## Scheduling

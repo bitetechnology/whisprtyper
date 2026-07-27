@@ -75,13 +75,14 @@ components:
 
 ## Hero geometry and word-flow stage
 
-- Desktop hero is near-full-viewport (`min-height: 100svh` minus the sticky nav allowance) but content-height safe: min-height only, flex-centered, never fixed height, and never behind the navbar.
-- Headline scales to `clamp(44px, 8.2vw, 94px)`; eyebrow, subcopy, CTA pair, exact download URL, and the platform note are unchanged.
-- Below the note sits a clipped motion stage (`overflow: hidden`, 28px radius, `clamp(280px, 36vh, 400px)` tall on desktop). One responsive SVG path forms a shallow valley from off-left, through the measured pill center, to off-right; the runtime viewBox matches rendered CSS pixels so glyphs are never stretched.
+- Desktop hero fills the viewport below the 60px sticky-nav allowance (`min-height: calc(100svh - 60px)`) but remains content-height safe: min-height only, flex-centered, never fixed height, and never behind the navbar.
+- The first view is deliberately title-led: the exact headline is **“Type faster with your voice.”**, followed by one primary **Download for Mac** CTA using the verified release URL. There is no eyebrow, subcopy, secondary CTA, compatibility note, stage label, stage tag, or figure caption competing with that message.
+- The headline scales to `clamp(44px, 8.2vw, 94px)`. The motion stage follows after `clamp(22px, 3.5vh, 38px)` so the demonstration remains visible without a large dead zone.
+- The clipped motion stage (`overflow: hidden`, 28px radius, `clamp(280px, 36vh, 400px)` tall on desktop) uses one responsive SVG path forming a shallow valley from off-left, through the measured pill center, to off-right; the runtime viewBox matches rendered CSS pixels so glyphs are never stretched.
 - Two identical transcript copies form one continuous conveyor. Each copy is rendered twice on that exact path with identical numeric offsets: muted gray in the input clip, and ivory in the output clip over a 34px black path stroke. The pill masks the clip boundary, so the same words visibly enter and leave it without appearing, fading, or changing order independently.
 - The processing pill is warm, outlined `#111113`, and lightly frosted. Its ten dark waveform bars and restrained 1.2% pulse are deterministic functions of the same transport position that moves the sentence—not an unrelated CSS loop.
-- Stage visuals are `aria-hidden` and non-interactive; the product relationship is stated in a visible figcaption and the small "You say" / "WhisprTyper types" tags (12px minimum). Tag, label, and caption text uses `--ink-soft` (#4C4A46) for at least WCAG AA contrast on the paper canvas.
-- At 390px the same connected through-pill composition remains horizontal. The curve rises less, the ribbon narrows to 28px, and each side shows a shorter contiguous sentence segment without stacking a card below the pill or causing page overflow.
+- Stage visuals remain `aria-hidden` and non-interactive because the title already states the product outcome. The animated sentence/ribbon is demonstration, not explanatory body copy.
+- At 390px the hero fills the first viewport below the two-row nav (`min-height: calc(100svh - 107px)`), keeping the next section below the fold. The motion stage is anchored toward the bottom of that space; the connected composition remains horizontal, the curve rises less, the ribbon narrows to 28px, and each side shows a shorter contiguous sentence segment without causing page overflow.
 
 ## Navbar geometry
 

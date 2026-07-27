@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WhisprTyper demo — See the flow</title>
+<meta name="description" content="A visual interaction preview of WhisprTyper’s hold-to-talk flow for Mac. Runs entirely on this page and never accesses your microphone.">
+<link rel="canonical" href="https://whisprtyper.vercel.app/demo.html">
+<meta name="theme-color" content="#f7f4ed">
+<link rel="icon" type="image/png" href="assets/whisprtyper-icon.png">
+<link rel="apple-touch-icon" href="assets/whisprtyper-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="WhisprTyper">
+<meta property="og:title" content="WhisprTyper demo — See the flow">
+<meta property="og:description" content="A visual interaction preview of WhisprTyper’s hold-to-talk flow for Mac. Runs entirely on this page and never accesses your microphone.">
+<meta property="og:url" content="https://whisprtyper.vercel.app/demo.html">
+<meta property="og:image" content="https://whisprtyper.vercel.app/assets/whisprtyper-icon.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="WhisprTyper demo — See the flow">
+<meta name="twitter:description" content="A visual interaction preview of WhisprTyper’s hold-to-talk flow for Mac. It never accesses your microphone.">
+<meta name="twitter:image" content="https://whisprtyper.vercel.app/assets/whisprtyper-icon.png">
+<link rel="stylesheet" href="styles.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+
+<svg class="svg-defs" aria-hidden="true" focusable="false" width="0" height="0">
+  <symbol id="apple-mark-def" viewBox="0 0 24 24"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></symbol>
+</svg>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <nav class="nav" aria-label="Main">
+    <a class="nav-brand" href="./">
+      <img src="assets/whisprtyper-icon.png" alt="" width="26" height="26">
+      <span>WhisprTyper</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html#apps">Apps</a></li>
+      <li><a href="index.html#speed">Speed</a></li>
+      <li><a href="index.html#features">Features</a></li>
+      <li><a href="index.html#faq">FAQ</a></li>
+    </ul>
+    <a class="button button-ink nav-cta" href="https://github.com/bitetechnology/whisprtyper/releases/download/v1.0.0/WhisprTyper-1.0.zip"><svg class="apple-mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#apple-mark-def"></use></svg>Download for Mac</a>
+  </nav>
+</header>
+
+<main id="main">
+
+  <section class="demo-intro">
+    <p class="demo-kicker">Interactive preview</p>
+    <h1 class="page-title">See the flow.</h1>
+    <p class="page-lede">This page is a visual interaction preview of WhisprTyper’s hold-to-talk flow. It runs entirely in this page, never accesses your microphone, and doesn’t perform live dictation — the real transcription happens in the Mac app.</p>
+  </section>
+
+  <section class="scene-section" aria-label="Interactive preview of the dictation flow">
+    <figure class="scene">
+      <div class="scene-inner" id="voice-demo">
+        <div class="compose-card">
+          <div class="compose-head">
+            <label class="compose-title" for="demo-input">New message</label>
+            <span class="demo-badge">Interactive preview</span>
+          </div>
+          <textarea class="compose-input" id="demo-input" rows="4" readonly placeholder="Your words will appear here." data-transcript="Just finished the draft. I can send it over after lunch so you have time to read it before the meeting."></textarea>
+        </div>
+        <button class="voice-pill" id="demo-pill" type="button" data-state="idle" aria-label="Activate or press and hold to preview dictation" aria-describedby="demo-status">
+          <span class="pill-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <svg class="pill-spinner" viewBox="0 0 16 16" aria-hidden="true">
+            <circle cx="8" cy="8" r="6.5" pathLength="100"></circle>
+          </svg>
+        </button>
+        <p class="demo-status" id="demo-status" aria-live="polite">Hold Control, press and hold the pill, or activate it once.</p>
+      </div>
+    </figure>
+    <p class="scene-caption">In the real app, WhisprTyper finalizes your words and returns them to the supported editable field that was active when you started. If that field is unavailable, the transcript stays available in memory.</p>
+  </section>
+
+  <section class="demo-cta" aria-label="Get the app">
+    <p class="demo-cta-lede">Like the feel? The real thing lives in your menu bar.</p>
+    <a class="button button-ink button-lg" href="https://github.com/bitetechnology/whisprtyper/releases/download/v1.0.0/WhisprTyper-1.0.zip"><svg class="apple-mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#apple-mark-def"></use></svg>Download for Mac</a>
+    <p class="demo-cta-fine">Apple Silicon · macOS 14+ · signed and notarized direct download</p>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a class="nav-brand" href="./">
+        <img src="assets/whisprtyper-icon.png" alt="" width="26" height="26">
+        <span>WhisprTyper</span>
+      </a>
+      <p>Voice typing for Mac,<br>by BITE TECHNOLOGIES LTD.</p>
+    </div>
+    <nav class="footer-cols" aria-label="Footer">
+      <div>
+        <h2>Product</h2>
+        <ul>
+          <li><a href="index.html#apps">Apps</a></li>
+          <li><a href="index.html#speed">Speed</a></li>
+          <li><a href="index.html#features">Features</a></li>
+          <li><a href="index.html#faq">FAQ</a></li>
+          <li><a href="demo.html">Try the demo</a></li>
+          <li><a href="https://github.com/bitetechnology/whisprtyper/releases/download/v1.0.0/WhisprTyper-1.0.zip"><svg class="apple-mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#apple-mark-def"></use></svg>Download for Mac</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Support</h2>
+        <ul>
+          <li><a href="support.html">Support &amp; setup guide</a></li>
+          <li><a href="mailto:admin@bite.technology?subject=WhisprTyper%20Support">admin@bite.technology</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Legal</h2>
+        <ul>
+          <li><a href="privacy.html">Privacy policy</a></li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+  <p class="footer-fine">© 2026 BITE TECHNOLOGIES LTD · Company No. 16023140 · Registered in England and Wales. The current direct download requires Apple Silicon and macOS 14 or later.</p>
+</footer>
+
+<script src="script.js" defer></script>
+</body>
+</html>

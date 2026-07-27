@@ -50,6 +50,10 @@
 </head>
 <body>
 
+<svg class="svg-defs" aria-hidden="true" focusable="false" width="0" height="0">
+  <symbol id="apple-mark-def" viewBox="0 0 24 24"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></symbol>
+</svg>
+
 <a class="skip-link" href="#main">Skip to content</a>
 
 <header class="site-header">
@@ -59,12 +63,12 @@
       <span>WhisprTyper</span>
     </a>
     <ul class="nav-links">
-      <li><a href="#product">Product</a></li>
-      <li><a href="#how">How it works</a></li>
-      <li><a href="#privacy">Privacy</a></li>
+      <li><a href="#apps">Apps</a></li>
+      <li><a href="#speed">Speed</a></li>
+      <li><a href="#features">Features</a></li>
       <li><a href="#faq">FAQ</a></li>
     </ul>
-    <a class="button button-ink nav-cta" href="https://github.com/bitetechnology/whisprtyper/releases/download/v1.0.0/WhisprTyper-1.0.zip" aria-label="Download WhisprTyper 1.0 for Apple Silicon">Download</a>
+    <a class="button button-ink nav-cta" href="https://github.com/bitetechnology/whisprtyper/releases/download/v1.0.0/WhisprTyper-1.0.zip"><svg class="apple-mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#apple-mark-def"></use></svg>Download for Mac</a>
   </nav>
 </header>
 
@@ -72,14 +76,10 @@
 
   <!-- Hero -->
   <section class="hero" id="top">
-    <p class="eyebrow">Voice typing for Mac</p>
-    <h1 class="hero-title">Type faster with this app.</h1>
-    <p class="hero-sub">Hold Control, speak naturally, and let go. WhisprTyper types the finished words into the Mac app you were using.</p>
+    <h1 class="hero-title">Type faster with your voice.</h1>
     <div class="hero-actions">
-      <a class="button button-ink button-lg" href="https://github.com/bitetechnology/whisprtyper/releases/download/v1.0.0/WhisprTyper-1.0.zip">Download for Mac</a>
-      <a class="button button-ghost button-lg" href="#how">See how it works</a>
+      <a class="button button-ink button-lg" href="https://github.com/bitetechnology/whisprtyper/releases/download/v1.0.0/WhisprTyper-1.0.zip"><svg class="apple-mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#apple-mark-def"></use></svg>Download for Mac</a>
     </div>
-    <p class="hero-note">macOS 14+ · Apple Silicon · On-device by default · No account · No transcript history</p>
 
     <figure class="hero-flow">
       <div class="hero-stage" id="hero-stage" aria-hidden="true">
@@ -102,218 +102,271 @@
         <div class="voice-pill hero-pill" data-state="recording">
           <span class="pill-wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
         </div>
-        <span class="hero-stage-label">listens &middot; transcribes &middot; types</span>
-        <span class="hero-stage-tag hero-tag-in">You say</span>
-        <span class="hero-stage-tag hero-tag-out">WhisprTyper types</span>
-      </div>
-      <figcaption class="hero-stage-caption">Your words flow into WhisprTyper as speech. The same sentence flows out as finished text — punctuation included — ready for the field you were using.</figcaption>
-    </figure>
-  </section>
-
-  <!-- Interactive product demo -->
-  <section class="scene-section" id="product" aria-labelledby="scene-title">
-    <div class="demo-heading">
-      <p class="eyebrow">Try the flow</p>
-      <h2 id="scene-title">Hold. Talk. Let go. See it typed.</h2>
-      <p>This preview shows the real recording and finalizing states. It does not access your microphone.</p>
-    </div>
-    <figure class="scene">
-      <div class="scene-inner" id="voice-demo">
-        <div class="compose-card">
-          <div class="compose-head">
-            <label class="compose-title" for="demo-input">New message</label>
-            <span class="demo-badge">Interactive preview</span>
-          </div>
-          <textarea class="compose-input" id="demo-input" rows="4" readonly>Just finished the draft. I can send it over after lunch so you have time to read it before the meeting.</textarea>
-        </div>
-        <button class="voice-pill" id="demo-pill" type="button" data-state="idle" aria-label="Activate or press and hold to preview dictation" aria-describedby="demo-status">
-          <span class="pill-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-          <svg class="pill-spinner" viewBox="0 0 16 16" aria-hidden="true">
-            <circle cx="8" cy="8" r="6.5" pathLength="100"></circle>
-          </svg>
-        </button>
-        <p class="demo-status" id="demo-status" aria-live="polite">Hold Control, press and hold the pill, or activate it once.</p>
       </div>
     </figure>
-    <p class="scene-caption">WhisprTyper finalizes your words, then returns them to the supported editable field that was active when you started. If that field is unavailable, the transcript stays available in memory.</p>
   </section>
 
-  <!-- CTA strip -->
-  <aside class="cta-strip" aria-label="Get the app">
-    <p>WhisprTyper 1.0 is available now as a signed and notarized direct download for Apple Silicon Macs.</p>
-    <a class="button button-ink" href="https://github.com/bitetechnology/whisprtyper/releases/download/v1.0.0/WhisprTyper-1.0.zip">Download for Mac</a>
-  </aside>
-
-  <!-- Works where you type -->
-  <section class="apps" aria-labelledby="apps-title">
-    <div class="apps-card">
-      <h2 id="apps-title">Works across your Mac</h2>
-      <p class="apps-sub">No plugins or per-app setup. WhisprTyper works with supported editable fields and intentionally refuses secure password fields.</p>
-      <ul class="app-strip">
-        <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg>Email</li>
-        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>Chat &amp; messages</li>
-        <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/></svg>Notes</li>
-        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9z"/><path d="M13 3v6h6"/></svg>Documents</li>
-        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 7 4 12l4.5 5M15.5 7 20 12l-4.5 5"/></svg>Code editors</li>
-        <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c-5.5 5-5.5 12 0 17 5.5-5 5.5-12 0-17z"/></svg>Browser text boxes</li>
-        <li class="app-any"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M9 4h6M9 20h6"/></svg>Supported editable fields</li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- How it works -->
-  <section class="how" id="how" aria-labelledby="how-title">
-    <div class="how-inner">
-      <p class="eyebrow">How it works</p>
-      <h2 id="how-title">Hold. Talk. Let go.</h2>
-      <ol class="how-steps">
-        <li class="reveal">
-          <span class="step-key"><kbd>⌃ control</kbd></span>
-          <h3>Hold Control</h3>
-          <p>Quick push-to-talk on the bare Control key is enabled by default. Hold it down from any app.</p>
-        </li>
-        <li class="reveal">
-          <span class="step-key step-key-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-          <h3>Talk</h3>
-          <p>Say what you want to write, in your own words. The default engine transcribes on your Mac.</p>
-        </li>
-        <li class="reveal">
-          <span class="step-key"><kbd>release</kbd></span>
-          <h3>Let go</h3>
-          <p>The finished words return to the supported editable field that was active when you started speaking.</p>
-        </li>
-      </ol>
-      <p class="how-footnote">Prefer a different trigger? The global shortcut defaults to <kbd>⌃</kbd><kbd>⌥</kbd><kbd>Space</kbd> and is configurable, with push-to-talk, toggle, and automatic speech trigger modes.</p>
-    </div>
-  </section>
-
-  <!-- Feature bento -->
-  <section class="bento" id="features" aria-labelledby="bento-title">
-    <h2 id="bento-title">Built to be trusted with your words</h2>
-    <div class="bento-grid">
-
-      <article class="bento-card bento-dark bento-local reveal">
-        <h3>Transcription happens on your Mac</h3>
-        <p>The default WhisperKit Multilingual engine runs locally after a one-time model download of about 626&nbsp;MB. Once cached, it can work offline. No accounts, no ads, no analytics, no developer-operated transcription cloud.</p>
-        <div class="engine-mock" aria-hidden="true">
-          <div class="engine-row engine-row-active">
-            <span class="engine-check">✓</span>
-            <span class="engine-name">WhisperKit Multilingual</span>
-            <span class="engine-note">on this Mac · default</span>
-          </div>
-          <div class="engine-row">
-            <span class="engine-check"></span>
-            <span class="engine-name">Apple System Speech</span>
-            <span class="engine-note">optional · may send audio to Apple</span>
-          </div>
-        </div>
-      </article>
-
-      <article class="bento-card bento-lavender bento-modes reveal">
-        <h3>Pick how capture starts</h3>
-        <p>Hold to talk, toggle it on, or let it start when you begin speaking.</p>
-        <div class="capture-mock" aria-hidden="true">
-          <div class="capture-row capture-row-active"><span class="capture-radio"></span>Push-to-talk</div>
-          <div class="capture-row"><span class="capture-radio"></span>Toggle</div>
-          <div class="capture-row"><span class="capture-radio"></span>Speech trigger</div>
-        </div>
-      </article>
-
-      <article class="bento-card bento-white bento-insert reveal">
-        <h3>Words return to the original field</h3>
-        <p>WhisprTyper captures the supported editable field that is active when recording starts and attempts to insert only there. If the field cannot be safely recovered, it keeps the transcript in memory instead.</p>
-        <div class="insert-mock" aria-hidden="true">
-          <div class="mini-window mini-back"><span class="mini-bar"></span><span class="ghost-line"></span><span class="ghost-line short"></span></div>
-          <div class="mini-window mini-front">
-            <span class="mini-bar"></span>
-            <span class="insert-field">See you at six<span class="caret caret-ink"></span></span>
-            <span class="insert-badge">inserted here</span>
-          </div>
-        </div>
-      </article>
-
-      <article class="bento-card bento-amber bento-password reveal">
-        <h3>Password fields are refused</h3>
-        <p>WhisprTyper will not type into password fields. Not by accident, not on request.</p>
-        <div class="refused-mock" aria-hidden="true">
-          <span class="refused-dots">••••••••</span>
-          <span class="refused-badge">refused</span>
-        </div>
-      </article>
-
-      <article class="bento-card bento-paper bento-memory reveal">
-        <h3>One transcript, in memory only</h3>
-        <p>If insertion fails, your latest transcript is held in RAM so you can copy it or retry the original destination. Retry is unavailable after successful insertion; memory clears when the app quits.</p>
-        <div class="menu-mock" aria-hidden="true">
-          <div class="menu-item menu-item-active">Copy Last Transcript</div>
-          <div class="menu-item">Retry Last Insertion</div>
-          <div class="menu-item">Quit <span class="menu-note">clears memory</span></div>
-        </div>
-      </article>
-
-      <article class="bento-card bento-white bento-menubar reveal">
-        <h3>Lives in the menu bar</h3>
-        <p>A native macOS&nbsp;14+ app that waits quietly next to your clock. No Dock icon, no window in your way.</p>
-        <div class="menubar-mock" aria-hidden="true">
-          <span class="menubar-wave"><i></i><i></i><i></i><i></i><i></i></span>
-          <span class="menubar-item">◐</span>
-          <span class="menubar-item">Wed 09:41</span>
-        </div>
-      </article>
-
-    </div>
-    <p class="cta-inline"><a class="button button-ink" href="https://github.com/bitetechnology/whisprtyper/releases/download/v1.0.0/WhisprTyper-1.0.zip">Download for Mac</a></p>
-  </section>
-
-  <!-- Use cases -->
-  <section class="usecases" aria-labelledby="usecases-title">
-    <h2 id="usecases-title">Where talking beats typing</h2>
-    <div class="usecase-grid">
-      <article class="usecase-card reveal">
-        <h3>Messages</h3>
-        <p>Say the whole reply instead of thumbing out a short one. It lands in the message box, ready to review and send.</p>
-        <p class="usecase-example">“Sounds good, I can pick it up after lunch. Want me to bring the printouts?”</p>
-      </article>
-      <article class="usecase-card reveal">
-        <h3>Documents</h3>
-        <p>Dictate the rough first draft while the thinking is fresh, then shape it with your keyboard.</p>
-        <p class="usecase-example">“The goal this quarter is to cut onboarding time in half. Here’s the plan.”</p>
-      </article>
-      <article class="usecase-card reveal">
-        <h3>Support replies</h3>
-        <p>Talking makes it cheap to be thorough. Walk through the fix out loud and send the complete answer.</p>
-        <p class="usecase-example">“Thanks for flagging this. Here’s what’s happening and two ways to fix it.”</p>
-      </article>
-      <article class="usecase-card reveal">
-        <h3>Code prose</h3>
-        <p>Commit messages, review comments, TODOs. Dictate the words around your code and keep your hands on the problem.</p>
-        <p class="usecase-example">“Fix race in session refresh: take the lock before reading the expiry timestamp.”</p>
-      </article>
-    </div>
-  </section>
-
-  <!-- Privacy -->
-  <section class="privacy" id="privacy" aria-labelledby="privacy-title">
-    <div class="privacy-inner">
-      <div class="privacy-copy">
-        <p class="eyebrow eyebrow-light">Privacy</p>
-        <h2 id="privacy-title">Your words stay off our servers</h2>
-        <p>WhisprTyper has no account system, no ads, no analytics, no tracking, and no developer-operated transcription backend. Audio is used for the current transcription; the only thing kept is one transcript in memory, for recovery, until you quit.</p>
-        <p>If you explicitly switch to the optional Apple System Speech engine, macOS may send audio to Apple under Apple’s privacy policy. The default engine stays on your Mac.</p>
-        <a class="text-link text-link-light" href="privacy.html">Read the full privacy policy</a>
+  <!-- 1. App compatibility train -->
+  <section class="bleed" id="apps" aria-labelledby="apps-title">
+    <div class="ink-card apps-band">
+      <div class="apps-head">
+        <h2 id="apps-title">Works in every app you already use.</h2>
+        <p class="apps-lede">Install once. Hold Control in any supported text field, speak, and your words return there.</p>
       </div>
-      <ul class="privacy-facts" aria-label="Privacy facts">
-        <li>No account</li>
-        <li>No transcript history</li>
-        <li>No analytics or tracking</li>
-        <li>Local by default</li>
-        <li>Password fields refused</li>
-        <li>Recovery clears on quit</li>
-      </ul>
+      <div class="apps-stage" id="apps-stage">
+        <ul class="app-train" id="app-train" aria-label="Apps WhisprTyper types into">
+          <li class="app-tile" data-app="discord" style="--tile:#5865F2">
+            <span class="visually-hidden">Discord</span>
+            <img src="assets/app-icons/discord.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="telegram" style="--tile:#26A5E4">
+            <span class="visually-hidden">Telegram</span>
+            <img src="assets/app-icons/telegram.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile app-tile-bright" data-app="snapchat" style="--tile:#FFFC00">
+            <span class="visually-hidden">Snapchat</span>
+            <img src="assets/app-icons/snapchat.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile app-tile-bright" data-app="notion" style="--tile:#FFFFFF">
+            <span class="visually-hidden">Notion</span>
+            <img src="assets/app-icons/notion.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="gmail" style="--tile:#EA4335">
+            <span class="visually-hidden">Gmail</span>
+            <img src="assets/app-icons/gmail.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="googlechrome" style="--tile:#4285F4">
+            <span class="visually-hidden">Google Chrome</span>
+            <img src="assets/app-icons/googlechrome.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="safari" style="--tile:#006CFF">
+            <span class="visually-hidden">Safari</span>
+            <img src="assets/app-icons/safari.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="figma" style="--tile:#F24E1E">
+            <span class="visually-hidden">Figma</span>
+            <img src="assets/app-icons/figma.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="linear" style="--tile:#5E6AD2">
+            <span class="visually-hidden">Linear</span>
+            <img src="assets/app-icons/linear.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="github" style="--tile:#24292F">
+            <span class="visually-hidden">GitHub</span>
+            <img src="assets/app-icons/github.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="xcode" style="--tile:#147EFB">
+            <span class="visually-hidden">Xcode</span>
+            <img src="assets/app-icons/xcode.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="todoist" style="--tile:#E44332">
+            <span class="visually-hidden">Todoist</span>
+            <img src="assets/app-icons/todoist.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="obsidian" style="--tile:#7C3AED">
+            <span class="visually-hidden">Obsidian</span>
+            <img src="assets/app-icons/obsidian.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="zoom" style="--tile:#0B5CFF">
+            <span class="visually-hidden">Zoom</span>
+            <img src="assets/app-icons/zoom.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="x" style="--tile:#111113">
+            <span class="visually-hidden">X</span>
+            <img src="assets/app-icons/x.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="instagram" style="--tile:#FF0069">
+            <span class="visually-hidden">Instagram</span>
+            <img src="assets/app-icons/instagram.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="whatsapp" style="--tile:#25D366">
+            <span class="visually-hidden">WhatsApp</span>
+            <img src="assets/app-icons/whatsapp.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="messenger" style="--tile:#00B2FF">
+            <span class="visually-hidden">Messenger</span>
+            <img src="assets/app-icons/messenger.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="googledrive" style="--tile:#4285F4">
+            <span class="visually-hidden">Google Drive</span>
+            <img src="assets/app-icons/googledrive.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="reddit" style="--tile:#FF4500">
+            <span class="visually-hidden">Reddit</span>
+            <img src="assets/app-icons/reddit.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="spotify" style="--tile:#1DB954">
+            <span class="visually-hidden">Spotify</span>
+            <img src="assets/app-icons/spotify.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="firefoxbrowser" style="--tile:#FF7139">
+            <span class="visually-hidden">Firefox Browser</span>
+            <img src="assets/app-icons/firefoxbrowser.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="dropbox" style="--tile:#0061FF">
+            <span class="visually-hidden">Dropbox</span>
+            <img src="assets/app-icons/dropbox.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+          <li class="app-tile" data-app="protonmail" style="--tile:#6D4AFF">
+            <span class="visually-hidden">Proton Mail</span>
+            <img src="assets/app-icons/protonmail.svg" alt="" width="30" height="30" loading="lazy">
+          </li>
+        </ul>
+      </div>
+      <p class="apps-note">Secure password fields are the one place WhisprTyper refuses to type — intentionally.</p>
     </div>
   </section>
 
-  <!-- FAQ -->
+  <!-- 2. Role marquee -->
+  <section class="bleed roles" aria-labelledby="roles-title">
+    <div class="roles-card">
+      <h2 id="roles-title">For people who write all day.</h2>
+      <div class="roles-marquee" data-marquee>
+        <div class="roles-track">
+          <ul class="roles-list">
+            <li>FOUNDERS</li><li class="roles-dot" aria-hidden="true">·</li>
+            <li>DESIGNERS</li><li class="roles-dot" aria-hidden="true">·</li>
+            <li>ENGINEERS</li><li class="roles-dot" aria-hidden="true">·</li>
+            <li>OPERATORS</li><li class="roles-dot" aria-hidden="true">·</li>
+            <li>RESEARCHERS</li><li class="roles-dot" aria-hidden="true">·</li>
+            <li>CREATORS</li><li class="roles-dot" aria-hidden="true">·</li>
+            <li>WRITERS</li><li class="roles-dot" aria-hidden="true">·</li>
+            <li>CONSULTANTS</li><li class="roles-dot" aria-hidden="true">·</li>
+          </ul>
+          <ul class="roles-list" aria-hidden="true">
+            <li>FOUNDERS</li><li class="roles-dot">·</li>
+            <li>DESIGNERS</li><li class="roles-dot">·</li>
+            <li>ENGINEERS</li><li class="roles-dot">·</li>
+            <li>OPERATORS</li><li class="roles-dot">·</li>
+            <li>RESEARCHERS</li><li class="roles-dot">·</li>
+            <li>CREATORS</li><li class="roles-dot">·</li>
+            <li>WRITERS</li><li class="roles-dot">·</li>
+            <li>CONSULTANTS</li><li class="roles-dot">·</li>
+          </ul>
+        </div>
+      </div>
+      <p class="roles-note">If typing is where your day goes, this is where it comes back.</p>
+    </div>
+  </section>
+
+  <!-- 3. Speed comparison -->
+  <section class="speed" id="speed" aria-labelledby="speed-title">
+    <div class="speed-head">
+      <h2 id="speed-title">Speak up to 4× faster.</h2>
+      <p class="speed-lede">Most people type about 45 words a minute — and speak about 220.</p>
+      <div class="speed-actions">
+        <a class="button button-ghost" href="demo.html">Try the demo</a>
+        <a class="button button-ink" href="https://github.com/bitetechnology/whisprtyper/releases/download/v1.0.0/WhisprTyper-1.0.zip"><svg class="apple-mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#apple-mark-def"></use></svg>Download for Mac</a>
+      </div>
+    </div>
+    <div class="speed-grid">
+      <article class="speed-card speed-card-keys">
+        <h3>Keyboard</h3>
+        <p class="wpm"><span class="wpm-num">45</span> <span class="wpm-unit">WPM</span></p>
+        <p class="speed-note">A steady typing pace, one keystroke at a time.</p>
+      </article>
+      <article class="speed-card speed-card-voice">
+        <h3>Voice</h3>
+        <p class="wpm"><span class="wpm-num">220</span> <span class="wpm-unit">WPM</span></p>
+        <p class="speed-note">A natural speaking pace, typed for you.</p>
+        <div class="speed-ribbon" data-marquee aria-hidden="true">
+          <div class="ribbon-track">
+            <span>spoken, not typed · hold Control, talk, let go · finished words in the field you started from ·&nbsp;</span>
+            <span>spoken, not typed · hold Control, talk, let go · finished words in the field you started from ·&nbsp;</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 4. Workflow statement -->
+  <section class="bleed workflow" aria-labelledby="workflow-title">
+    <div class="ink-card workflow-card">
+      <h2 id="workflow-title">A tool that adapts to your workflow.</h2>
+      <p class="workflow-lede">One shortcut when you need it. Quiet in the menu bar when you don’t.</p>
+      <div class="workflow-motif" aria-hidden="true">
+        <span class="motif-keys"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>Space</kbd></span>
+        <span class="motif-wave"><i></i><i></i><i></i><i></i><i></i></span>
+        <span class="motif-clock">Wed 09:41</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Feature field -->
+  <section class="bleed features" id="features" aria-labelledby="features-title">
+    <div class="features-inner">
+      <h2 id="features-title" class="features-heading">Built to be trusted with your words.</h2>
+
+      <div class="feature-story reveal">
+        <div class="feature-copy">
+          <h3>Privacy first</h3>
+          <p>Default transcription happens on your Mac and stays there. Only the optional Apple System Speech engine may send audio to Apple.</p>
+        </div>
+        <article class="feature-card">
+          <div class="engine-mock" aria-hidden="true">
+            <div class="engine-row engine-row-active">
+              <span class="engine-check">✓</span>
+              <span class="engine-name">WhisperKit Multilingual</span>
+              <span class="engine-note">on this Mac · default</span>
+            </div>
+            <div class="engine-row">
+              <span class="engine-check"></span>
+              <span class="engine-name">Apple System Speech</span>
+              <span class="engine-note">optional · may send audio to Apple</span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="feature-story feature-story-alt reveal">
+        <div class="feature-copy">
+          <h3>Local by default</h3>
+          <p>One model download of about 626&nbsp;MB, the first time. Once cached, the default engine can transcribe offline.</p>
+        </div>
+        <article class="feature-card">
+          <div class="model-mock" aria-hidden="true">
+            <div class="model-row"><span class="model-name">WhisperKit Multilingual</span><span class="model-size">626 MB · one time</span></div>
+            <div class="model-bar"><i></i></div>
+            <div class="model-status">Cached on this Mac · ready offline</div>
+          </div>
+        </article>
+      </div>
+
+      <div class="feature-story reveal">
+        <div class="feature-copy">
+          <h3>Instant where you type</h3>
+          <p>WhisprTyper captures the supported editable field that’s active when recording starts and returns your words there. If safe insertion fails, your transcript stays in memory instead.</p>
+        </div>
+        <article class="feature-card">
+          <div class="insert-mock" aria-hidden="true">
+            <div class="mini-window mini-back"><span class="mini-bar"></span><span class="ghost-line"></span><span class="ghost-line short"></span></div>
+            <div class="mini-window mini-front">
+              <span class="mini-bar"></span>
+              <span class="insert-field">See you at six<span class="caret caret-ink"></span></span>
+              <span class="insert-badge">inserted here</span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="feature-story feature-story-alt reveal">
+        <div class="feature-copy">
+          <h3>Native and out of the way</h3>
+          <p>A menu-bar app built for Apple Silicon Macs on macOS&nbsp;14 or later. No Dock icon, no window in your way.</p>
+        </div>
+        <article class="feature-card">
+          <div class="menubar-mock" aria-hidden="true">
+            <span class="menubar-wave"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="menubar-item">◐</span>
+            <span class="menubar-item">Wed 09:41</span>
+          </div>
+        </article>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 6. FAQ -->
   <section class="faq" id="faq" aria-labelledby="faq-title">
     <h2 id="faq-title">Frequently asked questions</h2>
     <div class="faq-list">
@@ -343,32 +396,19 @@
       </details>
       <details>
         <summary>How do I get it?</summary>
-        <p><a href="https://github.com/bitetechnology/whisprtyper/releases/download/v1.0.0/WhisprTyper-1.0.zip">Download the signed and notarized Apple Silicon build directly</a>. The Mac App Store version is still in preparation.</p>
+        <p><a href="https://github.com/bitetechnology/whisprtyper/releases/download/v1.0.0/WhisprTyper-1.0.zip"><svg class="apple-mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#apple-mark-def"></use></svg>Download the signed and notarized Apple Silicon build directly</a>. The Mac App Store version is still in preparation.</p>
       </details>
     </div>
   </section>
 
-  <!-- Download -->
-  <section class="download" id="download" aria-labelledby="download-title">
-    <div class="download-inner">
-      <p class="eyebrow eyebrow-light">Get WhisprTyper</p>
-      <h2 id="download-title">Download WhisprTyper 1.0</h2>
-      <p class="download-sub">The signed and notarized direct build is available now for Apple Silicon. The Mac App Store version is still in preparation.</p>
-      <div class="channel-grid">
-        <article class="channel-card">
-          <h3>Direct download</h3>
-          <p class="channel-status">Available now · Apple Silicon</p>
-          <p>Version 1.0 for macOS 14 or later, signed with our Developer ID and notarized by Apple. Direct-download updates are currently manual.</p>
-          <a class="button button-paper" href="https://github.com/bitetechnology/whisprtyper/releases/download/v1.0.0/WhisprTyper-1.0.zip">Download for Mac</a>
-        </article>
-        <article class="channel-card">
-          <h3>Mac App Store</h3>
-          <p class="channel-status">Coming soon</p>
-          <p>We’re preparing the App Store submission. Email admin@bite.technology and we’ll send a note the day it goes live.</p>
-          <a class="text-link text-link-light" href="mailto:admin@bite.technology?subject=WhisprTyper%20App%20Store%20Launch%20Note">Email for a launch note</a>
-        </article>
-      </div>
-      <p class="download-fine">Requires Apple Silicon and macOS 14 or later · No account needed</p>
+  <!-- 7. Final native Mac CTA -->
+  <section class="bleed final" id="download" aria-labelledby="download-title">
+    <div class="ink-card final-card">
+      <p class="platform-badge"><svg class="apple-mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#apple-mark-def"></use></svg>Apple Silicon · macOS 14+</p>
+      <h2 id="download-title">Native to your Mac.</h2>
+      <p class="final-lede">Signed, notarized, and ready when you are.</p>
+      <p class="final-action"><a class="button button-paper button-lg" href="https://github.com/bitetechnology/whisprtyper/releases/download/v1.0.0/WhisprTyper-1.0.zip"><svg class="apple-mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#apple-mark-def"></use></svg>Download for Mac</a></p>
+      <p class="final-fine">No account needed · Mac App Store coming soon · Direct-download updates are currently manual.</p>
     </div>
   </section>
 
@@ -385,23 +425,25 @@
     </div>
     <nav class="footer-cols" aria-label="Footer">
       <div>
-        <h3>Product</h3>
+        <h2>Product</h2>
         <ul>
-          <li><a href="#product">Product</a></li>
-          <li><a href="#how">How it works</a></li>
+          <li><a href="#apps">Apps</a></li>
+          <li><a href="#speed">Speed</a></li>
+          <li><a href="#features">Features</a></li>
           <li><a href="#faq">FAQ</a></li>
-          <li><a href="https://github.com/bitetechnology/whisprtyper/releases/download/v1.0.0/WhisprTyper-1.0.zip">Download for Mac</a></li>
+          <li><a href="demo.html">Try the demo</a></li>
+          <li><a href="https://github.com/bitetechnology/whisprtyper/releases/download/v1.0.0/WhisprTyper-1.0.zip"><svg class="apple-mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#apple-mark-def"></use></svg>Download for Mac</a></li>
         </ul>
       </div>
       <div>
-        <h3>Support</h3>
+        <h2>Support</h2>
         <ul>
           <li><a href="support.html">Support &amp; setup guide</a></li>
           <li><a href="mailto:admin@bite.technology?subject=WhisprTyper%20Support">admin@bite.technology</a></li>
         </ul>
       </div>
       <div>
-        <h3>Legal</h3>
+        <h2>Legal</h2>
         <ul>
           <li><a href="privacy.html">Privacy policy</a></li>
         </ul>
