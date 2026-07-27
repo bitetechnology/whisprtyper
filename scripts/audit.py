@@ -143,9 +143,14 @@ check("only the avatar mouth components are animated",
       and "@keyframes hero-avatar-lower-lip" in styles
       and ".hero-avatar-head { animation" not in styles
       and ".hero-avatar-torso { animation" not in styles)
-check("avatar speaking loop respects user pause and reduced motion",
+check("avatar speaking loop respects viewport lifecycle, user pause, and reduced motion",
       ".motion-paused .hero-avatar-mouth-open" in styles
+      and ".hero-avatar.is-motion-active .hero-avatar-mouth-open" in styles
+      and "animation-play-state: paused;" in styles
       and "animation-play-state: paused !important;" in styles
+      and 'observer.observe(avatar)' in script
+      and "part.getAnimations().forEach" in script
+      and 'document.addEventListener("visibilitychange", sync)' in script
       and "@media (prefers-reduced-motion: reduce)" in styles
       and ".hero-avatar-mouth-open { transform: scaleY(0.08); }" in styles)
 TRANSCRIPT = (
@@ -300,6 +305,10 @@ check("company marquee and WPM conveyor are visibility, preference, and user-pau
       and "motion-paused" in script
       and 'id="motion-toggle"' in index
       and 'motionToggle.setAttribute("aria-label"' not in script)
+check("user pause freezes RAF transports without restoring their static start state",
+      'reducedMotion.matches || document.body.classList.contains("motion-paused")' not in script
+      and script.count('if (document.body.classList.contains("motion-paused"))') >= 3
+      and script.count('stop();\n      return;') >= 3)
 
 check("speed section keeps the requested 30/70 contract without a product benchmark claim",
       'id="speed"' in index
@@ -322,7 +331,8 @@ check("speed comparison uses one responsive variable-velocity SVG word path",
       and "getPointAtLength" in script
       and "ResizeObserver" in script
       and ".speed-ribbon" not in styles
-      and 'class="speed-ribbon"' not in index)
+      and 'class="speed-ribbon"' not in index
+      and "html:not(.js) .speed-flow-stage { display: none; }" in styles)
 check("speed section has demo and Apple-icon download actions",
       '<a class="button button-ghost" href="demo.html">Try the demo</a>' in index
       and re.search(r'class="speed-actions".*?class="apple-mark"', index, re.S) is not None)

@@ -432,8 +432,12 @@
   }
 
   function sync() {
-    if (reducedMotion.matches || document.body.classList.contains("motion-paused")) {
+    if (reducedMotion.matches) {
       restoreStatic();
+      return;
+    }
+    if (document.body.classList.contains("motion-paused")) {
+      stop();
       return;
     }
     if (stageInView && !document.hidden) start();
@@ -563,8 +567,12 @@
   }
 
   function sync() {
-    if (reducedMotion.matches || document.body.classList.contains("motion-paused")) {
+    if (reducedMotion.matches) {
       restoreStatic();
+      return;
+    }
+    if (document.body.classList.contains("motion-paused")) {
+      stop();
       return;
     }
     if (inView && !document.hidden) start();
@@ -804,8 +812,12 @@
   }
 
   function sync() {
-    if (reducedMotion.matches || document.body.classList.contains("motion-paused")) {
+    if (reducedMotion.matches) {
       restoreStatic();
+      return;
+    }
+    if (document.body.classList.contains("motion-paused")) {
+      stop();
       return;
     }
     if (inView && !document.hidden) start();
@@ -887,5 +899,53 @@
     reducedMotion.addEventListener("change", apply);
   } else if (typeof reducedMotion.addListener === "function") {
     reducedMotion.addListener(apply);
+  }
+})();
+
+/* ---------- Hero avatar visibility control ----------
+   CSS animation is paused by default. Run the mouth loop only while the hero
+   is visible, the document is active, and motion has not been paused. */
+(function () {
+  "use strict";
+
+  var avatar = document.querySelector(".hero-avatar");
+  if (!avatar) return;
+
+  var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var inView = false;
+
+  function sync() {
+    var run = inView && !document.hidden && !reducedMotion.matches
+      && !document.body.classList.contains("motion-paused");
+    avatar.classList.toggle("is-motion-active", run);
+    Array.prototype.forEach.call(
+      avatar.querySelectorAll(".hero-avatar-mouth-open, .hero-avatar-lower-lip"),
+      function (part) {
+        if (typeof part.getAnimations !== "function") return;
+        part.getAnimations().forEach(function (animation) {
+          if (run) animation.play();
+          else animation.pause();
+        });
+      }
+    );
+  }
+
+  if ("IntersectionObserver" in window) {
+    var observer = new IntersectionObserver(function (entries) {
+      inView = entries.some(function (entry) { return entry.isIntersecting; });
+      sync();
+    }, { threshold: 0.05 });
+    observer.observe(avatar);
+  } else {
+    inView = true;
+    sync();
+  }
+
+  document.addEventListener("visibilitychange", sync);
+  window.addEventListener("whisprmotionchange", sync);
+  if (typeof reducedMotion.addEventListener === "function") {
+    reducedMotion.addEventListener("change", sync);
+  } else if (typeof reducedMotion.addListener === "function") {
+    reducedMotion.addListener(sync);
   }
 })();

@@ -62,13 +62,14 @@ This is not a before/after card transition. Input and output are two color treat
 - Only the mouth cavity, tongue, and lower lip animate. No head bob, blinking, arm movement, or full-body motion is permitted.
 - The speaking loop uses short irregular mouth openings over `1.7s`; the silhouette and thick outline remain stable.
 - User pause freezes the current mouth frame. Reduced motion and print show the mouth closed.
+- The CSS loop is paused by default and runs only while the avatar intersects the viewport, the document is visible, reduced motion is off, and the global pause is inactive.
 - The SVG is decorative (`aria-hidden="true"`) because the adjacent hero title and control already communicate the feature.
 
 ## WPM shared-path comparison
 
 - One SVG path spans the complete 30/70 keyboard/voice grid and curves gently near the card seam.
 - Individual word particles travel on that one path. They use a slow local velocity in the 45 WPM region and smoothly accelerate after entering the 220 WPM region; this cannot be represented by a single global `textPath startOffset` speed.
-- The animation runs only while intersecting, visible, motion-allowed, and not user-paused. Reduced motion and no-JS preserve a complete static path with representative words.
+- The animation runs only while intersecting, visible, motion-allowed, and not user-paused. Reduced motion uses dynamically measured static geometry. Without JavaScript, the authored path remains on side-by-side desktop cards; stacked layouts hide the fixed-aspect overlay and keep the complete 45/220 metric cards and explanatory copy.
 
 ## Fallbacks
 
