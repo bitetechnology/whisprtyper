@@ -383,7 +383,7 @@ check("demo page canonical and visual-preview truth are present",
       and "See the flow." in demo
       and "never accesses your microphone" in demo
       and "doesn’t perform live dictation" in demo)
-share_image = ROOT / "assets" / "whisprtyper-share.png"
+share_image = ROOT / "assets" / "whisprtyper-share-v2.png"
 share_bytes = share_image.read_bytes() if share_image.exists() else b""
 share_size = (
     int.from_bytes(share_bytes[16:20], "big"),
@@ -391,11 +391,13 @@ share_size = (
 ) if share_bytes.startswith(b"\x89PNG\r\n\x1a\n") and len(share_bytes) >= 24 else (0, 0)
 check("homepage has crawlable rich-share metadata and a dedicated 1200x630 image",
       f'<meta property="og:url" content="{ORIGIN}/">' in index
-      and f'<meta property="og:image" content="{ORIGIN}/assets/whisprtyper-share.png">' in index
+      and f'<meta property="og:image" content="{ORIGIN}/assets/whisprtyper-share-v2.png">' in index
+      and f'<meta property="og:image:url" content="{ORIGIN}/assets/whisprtyper-share-v2.png">' in index
+      and f'<meta property="og:image:secure_url" content="{ORIGIN}/assets/whisprtyper-share-v2.png">' in index
       and '<meta property="og:image:width" content="1200">' in index
       and '<meta property="og:image:height" content="630">' in index
       and '<meta name="twitter:card" content="summary_large_image">' in index
-      and f'<meta name="twitter:image" content="{ORIGIN}/assets/whisprtyper-share.png">' in index
+      and f'<meta name="twitter:image" content="{ORIGIN}/assets/whisprtyper-share-v2.png">' in index
       and share_size == (1200, 630), f"image size={share_size}")
 check("canonical/share metadata no longer points crawlers at the protected Vercel alias",
       "whisprtyper.vercel.app" not in index and "whisprtyper.vercel.app" not in demo)
