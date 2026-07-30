@@ -20,6 +20,8 @@ DOWNLOAD_URL = (
     "v1.0.0/WhisprTyper-1.0.zip"
 )
 ORIGIN = "https://whispr.bite.technology"
+UMAMI_SCRIPT_URL = "https://alessandros-mac-mini.tail820b4f.ts.net/script.js"
+UMAMI_WEBSITE_ID = "5f59d578-a3c4-48fa-ad6b-1b1a7de22acc"
 
 failures = []
 
@@ -38,6 +40,13 @@ page_text = {
     page: (ROOT / page).read_text(encoding="utf-8")
     for page in ["index.html", "demo.html", "privacy.html", "support.html"]
 }
+
+# --- Privacy-first website analytics --------------------------------------
+for page, text in page_text.items():
+    check(f"{page} loads the self-hosted Umami script", f'src="{UMAMI_SCRIPT_URL}"' in text)
+    check(f"{page} uses the WhisprTyper website ID", f'data-website-id="{UMAMI_WEBSITE_ID}"' in text)
+    check(f"{page} honors Do Not Track", 'data-do-not-track="true"' in text)
+check("privacy policy discloses website analytics", "self-hosted Umami service" in page_text["privacy.html"])
 
 # --- Download links and Apple icon controls -------------------------------
 expected_release_links = {"index.html": 6, "demo.html": 3, "privacy.html": 0, "support.html": 0}
