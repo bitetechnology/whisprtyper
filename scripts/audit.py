@@ -43,9 +43,34 @@ page_text = {
 
 # --- Privacy-first website analytics --------------------------------------
 for page, text in page_text.items():
-    check(f"{page} loads the self-hosted Umami script", f'src="{UMAMI_SCRIPT_URL}"' in text)
-    check(f"{page} uses the WhisprTyper website ID", f'data-website-id="{UMAMI_WEBSITE_ID}"' in text)
-    check(f"{page} honors Do Not Track", 'data-do-not-track="true"' in text)
+    script_tags = re.findall(r"<script\b[^>]*></script>", text, re.I | re.S)
+    tracker_tags = [tag for tag in script_tags if UMAMI_SCRIPT_URL in tag]
+    check(
+        f"{page} has exactly one self-hosted Umami tracker",
+        len(tracker_tags) == 1,
+        f"found {len(tracker_tags)}",
+    )
+    if tracker_tags:
+        tag = tracker_tags[0]
+        expected_attributes = [
+            f'src="{UMAMI_SCRIPT_URL}"',
+            f'data-website-id="{UMAMI_WEBSITE_ID}"',
+            'data-do-not-track="true"',
+            'data-exclude-search="true"',
+            'data-exclude-hash="true"',
+            'data-before-send="umamiBeforeSend"',
+        ]
+        check(
+            f"{page} tracker has the complete privacy configuration",
+            re.search(r"\basync\b", tag) is not None
+            and all(attribute in tag for attribute in expected_attributes),
+        )
+    check(
+        f"{page} strips sensitive URL values and omits referrers",
+        text.count("window.umamiBeforeSend=") == 1
+        and 'url:payload.url?payload.url.split(/[?#]/,1)[0]:payload.url' in text
+        and 'referrer:""' in text,
+    )
 check("privacy policy discloses website analytics", "self-hosted Umami service" in page_text["privacy.html"])
 
 # --- Download links and Apple icon controls -------------------------------
