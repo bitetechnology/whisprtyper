@@ -20,6 +20,8 @@ DOWNLOAD_URL = (
     "v1.0.0/WhisprTyper-1.0.zip"
 )
 ORIGIN = "https://whispr.bite.technology"
+UMAMI_SCRIPT = "https://alessandros-mac-mini.tail820b4f.ts.net/script.js"
+UMAMI_WEBSITE_ID = "5f59d578-a3c4-48fa-ad6b-1b1a7de22acc"
 
 failures = []
 
@@ -38,6 +40,56 @@ page_text = {
     page: (ROOT / page).read_text(encoding="utf-8")
     for page in ["index.html", "demo.html", "privacy.html", "support.html"]
 }
+
+# --- Privacy-safe website analytics --------------------------------------
+for page in ["index.html", "demo.html"]:
+    tracker_tags = [
+        tag for tag in re.findall(r"<script\b[^>]*></script>", page_text[page], re.I)
+        if UMAMI_SCRIPT in tag
+    ]
+    check(
+        f"{page} loads the exact public Umami tracker once",
+        len(tracker_tags) == 1
+        and f'src="{UMAMI_SCRIPT}"' in tracker_tags[0]
+        and f'data-website-id="{UMAMI_WEBSITE_ID}"' in tracker_tags[0]
+        and 'data-do-not-track="true"' in tracker_tags[0]
+        and "defer" in tracker_tags[0],
+        f"found {tracker_tags}",
+    )
+
+analytics_marker = "/* ---------- Privacy-safe CTA analytics ---------- */"
+analytics_script = script.split(analytics_marker, 1)[1].split(
+    "/* ---------- End privacy-safe CTA analytics ---------- */", 1
+)[0] if analytics_marker in script else ""
+check(
+    "CTA analytics records click, success, timeout, and error outcomes",
+    all(f'"{event}"' in analytics_script
+        for event in ["cta_click", "cta_success", "cta_timeout", "cta_error"]),
+)
+check(
+    "CTA analytics covers primary links and the interactive preview",
+    'querySelectorAll("a.button[href]")' in analytics_script
+    and 'beginCta("demo_preview"' in script,
+)
+check(
+    "CTA timeout is click-gated and bounded",
+    re.search(
+        r'addEventListener\("click".*?beginCta\(.*?CTA_TIMEOUT_MS',
+        analytics_script,
+        re.S,
+    ) is not None
+    and "window.setTimeout" in analytics_script
+    and "outcome.waitForResult()" in analytics_script
+    and "demoCtaOutcome.waitForResult()" in script,
+)
+check(
+    "CTA analytics payloads cannot include page inputs or URL query data",
+    bool(analytics_script)
+    and all(token not in analytics_script for token in [
+        "input.value", ".textContent", "location.search", "location.hash",
+        "document.cookie", "localStorage", "sessionStorage",
+    ]),
+)
 
 # --- Download links and Apple icon controls -------------------------------
 expected_release_links = {"index.html": 6, "demo.html": 3, "privacy.html": 0, "support.html": 0}
