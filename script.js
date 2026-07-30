@@ -3,6 +3,90 @@
 (function () {
   "use strict";
 
+  /* ---------- Privacy-safe CTA analytics ---------- */
+  var CTA_TIMEOUT_MS = 5000;
+  var OUTCOMES = {
+    cta_success: true,
+    cta_timeout: true,
+    cta_error: true
+  };
+
+  function trackEvent(eventName, cta) {
+    if (!window.umami || typeof window.umami.track !== "function") return;
+    try {
+      var result = window.umami.track(eventName, { cta: cta });
+      if (result && typeof result.catch === "function") result.catch(function () {});
+    } catch (_) {
+      /* Analytics must never interrupt the user's action. */
+    }
+  }
+
+  function beginCta(cta, timeoutMs) {
+    var settled = false;
+    var timeout = Math.max(1000, timeoutMs || CTA_TIMEOUT_MS);
+    var timer = null;
+
+    function waitForResult() {
+      if (settled || timer !== null) return;
+      timer = window.setTimeout(function () {
+        settle("cta_timeout");
+      }, timeout);
+    }
+
+    function settle(eventName) {
+      if (settled || !OUTCOMES[eventName]) return;
+      settled = true;
+      if (timer !== null) window.clearTimeout(timer);
+      trackEvent(eventName, cta);
+    }
+
+    trackEvent("cta_click", cta);
+
+    return {
+      waitForResult: waitForResult,
+      success: function () { settle("cta_success"); },
+      error: function () { settle("cta_error"); },
+      cancel: function () {
+        if (settled) return;
+        settled = true;
+        if (timer !== null) window.clearTimeout(timer);
+      }
+    };
+  }
+
+  window.whisprAnalytics = { beginCta: beginCta };
+
+  function ctaName(link) {
+    var href = link.getAttribute("href") || "";
+    if (href.indexOf("/releases/download/") !== -1) return "download_mac";
+    if (href === "demo.html" || href.slice(-10) === "/demo.html") return "try_demo";
+    return null;
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll("a.button[href]"), function (link) {
+    var cta = ctaName(link);
+    if (!cta) return;
+    link.addEventListener("click", function (event) {
+      if ((event.button !== undefined && event.button !== 0) || event.defaultPrevented) return;
+      var outcome = beginCta(cta, CTA_TIMEOUT_MS);
+      outcome.waitForResult();
+      window.setTimeout(function () {
+        try {
+          /* A link succeeds when its valid browser navigation/download handoff
+             remains enabled. This does not claim that a download completed. */
+          if (!event.defaultPrevented && link.getAttribute("href")) outcome.success();
+        } catch (_) {
+          outcome.error();
+        }
+      }, 0);
+    });
+  });
+  /* ---------- End privacy-safe CTA analytics ---------- */
+})();
+
+(function () {
+  "use strict";
+
   var motionToggle = document.getElementById("motion-toggle");
   if (motionToggle) {
     motionToggle.addEventListener("click", function () {
@@ -56,6 +140,7 @@
   var activationTimer = null;
   var finalTimer = null;
   var demoInView = false;
+  var demoCtaOutcome = null;
 
   function clearTimers() {
     if (activationTimer) {
@@ -83,6 +168,9 @@
   function startPreview(owner) {
     if (activeOwner) return false;
     clearTimers();
+    demoCtaOutcome = window.whisprAnalytics
+      ? window.whisprAnalytics.beginCta("demo_preview", 3000)
+      : null;
     activeOwner = owner;
     previousValue = input.value;
     input.value = "";
@@ -95,6 +183,8 @@
     input.value = transcript;
     setState("idle");
     status.textContent = "Inserted in the preview field. Hold or activate again to replay.";
+    if (demoCtaOutcome) demoCtaOutcome.success();
+    demoCtaOutcome = null;
     activeOwner = null;
     finalTimer = null;
   }
@@ -108,6 +198,7 @@
     }
     setState("finalizing");
     status.textContent = "Finalizing and inserting…";
+    if (demoCtaOutcome) demoCtaOutcome.waitForResult();
     finalTimer = window.setTimeout(completePreview, 800);
   }
 
@@ -117,6 +208,8 @@
     input.value = previousValue;
     setState("idle");
     status.textContent = message || "Preview cancelled. Nothing was inserted.";
+    if (demoCtaOutcome) demoCtaOutcome.cancel();
+    demoCtaOutcome = null;
     activeOwner = null;
   }
 
